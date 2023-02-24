@@ -166,7 +166,9 @@ namespace PublicationsAnnualReport
         public string subjectalias = "";
         public string profile = "";
         public string institution = "";
+        public string originst = ""; //save original institution if virtual institution created
         public string department = "";
+        public string specialgroup = "";
         public char gender = 'X';
         public string notes = "";
         public bool HDa_in_publication = false;
@@ -182,7 +184,7 @@ namespace PublicationsAnnualReport
             Dictionary<string, Dictionary<string, int>> isdict = new Dictionary<string, Dictionary<string, int>>();
             foreach (authorclass ac in caslist)
             {
-                string inst = ac.getinstitution();
+                string inst = ac.getinstitution(false);
                 if (!instsubj.ContainsKey(inst))
                     instsubj.Add(inst, new List<string>() { nosubject });
                 string subj = ac.getsubjectalias();
@@ -229,7 +231,7 @@ namespace PublicationsAnnualReport
 
             foreach (authorclass ac in caslist)
             {
-                string inst = ac.getinstitution();
+                string inst = ac.getinstitution(false);
                 string subj = ac.getsubjectalias();
                 if (subj == nosubject)
                     continue;
@@ -272,13 +274,23 @@ namespace PublicationsAnnualReport
             return null;
         }
 
-        public string getinstitution()
+        public string getinstitution(bool trueinst) //trueinst return "originst" if true, "institution" if false.
         {
-            if (!String.IsNullOrEmpty(institution))
-                return institution;
-            foreach (string aff in affiliation)
-                if (institutions.Contains(aff))
-                    return aff.ToLower();
+            if (trueinst)
+            {
+                if (!String.IsNullOrEmpty(originst))
+                    return originst;
+                else
+                    return getinstitution(false);
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(institution))
+                    return institution;
+                foreach (string aff in affiliation)
+                    if (institutions.Contains(aff))
+                        return aff.ToLower();
+            }
             return noinstitution;
         }
 
@@ -343,6 +355,27 @@ namespace PublicationsAnnualReport
 
         }
 
+        public static authorclass findbyCAS(string cas, List<authorclass> aulist)
+        {
+            var q = from c in aulist
+                    where c.CAS == cas
+                    select c;
+            if (q.Count() == 1)
+            {
+                return q.First();
+                //foreach (string aff in q.First().affiliation)
+                //{
+                //    if (subjects.Contains(aff))
+                //        return aff;
+                //}
+                //return "no subject";
+            }
+            else
+                return null;
+
+        }
+
+
         public static string subjectfromCAS(string cas, List<authorclass> aulist)
         {
             var q = from c in aulist
@@ -375,6 +408,11 @@ namespace PublicationsAnnualReport
             return "no subject";
         }
 
+        public string getgroup()
+        {
+            return this.specialgroup;
+        }
+
         public string getsubjectalias()
         {
             if (!String.IsNullOrEmpty(subjectalias))
@@ -383,6 +421,34 @@ namespace PublicationsAnnualReport
             if (pubclass.ausubjalias.ContainsKey(s))
                 s = pubclass.ausubjalias[s];
             return s;
+        }
+
+        public void addgroup(string group, bool makevirtinst)
+        {
+            this.specialgroup = group;
+            this.affiliation.Add(group);
+            if (makevirtinst)
+            {
+                this.originst = this.institution;
+                this.institution = group;
+                if (!institutions.Contains(group))
+                    institutions.Add(group);
+                if (!instsubj.ContainsKey(group))
+                {
+                    instsubj.Add(group, new List<string>());
+                }
+                if (!instsubj[group].Contains(this.getsubjectalias()))
+                    instsubj[group].Add(this.getsubjectalias());
+
+            }
+        }
+
+        public static List<authorclass> getbysubject(string subject, List<authorclass> aulist)
+        {
+            var q = from c in aulist
+                    where c.getsubjectalias() == subject
+                    select c;
+            return q.ToList();
         }
 
 

@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Xceed.Words.NET;
-using System.Runtime.InteropServices;
-using Excel = Microsoft.Office.Interop.Excel;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -19,13 +17,13 @@ namespace PublicationsAnnualReport
     public partial class Form1 : Form
     {
 
-        public List<authorclass> caslist = new List<authorclass>();
+        public static List<authorclass> caslist = new List<authorclass>();
 
-        public List<pubclass> publist = new List<pubclass>();
+        public static List<pubclass> publist = new List<pubclass>();
 
-        public List<journalclass> journallist = new List<journalclass>();
+        public static List<journalclass> journallist = new List<journalclass>();
 
-        public List<publisherclass> publisherlist = new List<publisherclass>();
+        public static List<publisherclass> publisherlist = new List<publisherclass>();
 
         public Dictionary<char, int> genderlist = new Dictionary<char, int>()
         { { 'M', 0 }, {'F',0 }, {'X',0 } };
@@ -294,8 +292,8 @@ namespace PublicationsAnnualReport
                     {
                         if (CASwithHDa.Contains(ac.CAS))
                         {
-                            if (!pcinstlist.Contains(ac.getinstitution()))
-                                pcinstlist.Add(ac.getinstitution());
+                            if (!pcinstlist.Contains(ac.getinstitution(false)))
+                                pcinstlist.Add(ac.getinstitution(false));
                             if (!pcsubjlist.Contains(ac.getsubjectalias()))
                                 pcsubjlist.Add(ac.getsubjectalias());
                         }
@@ -305,7 +303,7 @@ namespace PublicationsAnnualReport
 
                         if (CASwithoutHDa.Contains(ac.CAS))
                         {
-                            if (!pcinstlist.Contains(ac.getinstitution()))
+                            if (!pcinstlist.Contains(ac.getinstitution(false)))
                                 memo(pc.dict[pubclass.pidstring]+" Institution level missing for " + ac.name);
                             else if (!pcsubjlist.Contains(ac.getsubjectalias()))
                                 memo(pc.dict[pubclass.pidstring]+ " Subject level missing for " + ac.name);
@@ -581,10 +579,13 @@ namespace PublicationsAnnualReport
                 Xceed.Words.NET.List listpub = null;
 
                 SortedList<string, string[]> sortlist = new SortedList<string, string[]>();
+                Dictionary<string, string> doublecheckdict = new Dictionary<string, string>();
 
                 foreach (pubclass pub in q)
                 {
                     string[] apaparts = pub.makeapa();
+                    //if (apaparts[0].Contains("Giedraitis"))
+                    //    memo(apaparts[0]);
                     //var qapa = from c in apalist where c.Contains(pub.dict[pubclass.titstring]) select c;
                     //if (qapa.Count() == 0)
                     //    memo("Title not found " + pub.dict[pubclass.titstring]);
@@ -598,15 +599,28 @@ namespace PublicationsAnnualReport
                     //}
                     //if (!sortlist.ContainsKey(apa))
                     //    sortlist.Add(apa, apa);
-                    if (!sortlist.ContainsKey(apaparts[0]))
-                        sortlist.Add(apaparts[0], apaparts);
+                    string fullapa = util.mergestringvector(apaparts);
+                    if (doublecheckdict.ContainsKey(fullapa))
+                        memo("DUBLETT: " + pub.dict[pubclass.pidstring] + " " + doublecheckdict[fullapa] + " " + fullapa);
+                    else
+                    {
+                        doublecheckdict.Add(fullapa, pub.dict[pubclass.pidstring]);
+                        if (!sortlist.ContainsKey(apaparts[0]))
+                            sortlist.Add(apaparts[0], apaparts);
+                        else
+                        {
+                            while (sortlist.ContainsKey(apaparts[0]))
+                                apaparts[0] += " ";
+                            sortlist.Add(apaparts[0], apaparts);
+                        }
+                    }
                 }
                 foreach (string apa in sortlist.Keys)
                 {
                     if (listpub == null)
-                        listpub = document.AddList(apa, 0, ListItemType.Numbered, 1);
+                        listpub = document.AddList(apa.Trim(), 0, ListItemType.Numbered, 1);
                     else
-                        document.AddListItem(listpub, apa);
+                        document.AddListItem(listpub, apa.Trim());
                     listpub.Items.Last().Append(sortlist[apa][1]).Italic();
                     listpub.Items.Last().Append(sortlist[apa][2]);
 
@@ -930,13 +944,13 @@ namespace PublicationsAnnualReport
                     if (CBanyauthorpos.Checked)
                     {
                         q = from c in q
-                            where c.hasaffiliation(inst,true)
+                            where c.get_authorinstitution(false).Contains(inst)
                             select c;
                     }
                     else
                     {
                         q = from c in q
-                            where c.firstHDa.affiliation.Contains(inst)
+                            where c.firstHDa.getinstitution(false).Contains(inst)
                             select c;
                     }
                     if (CB_publists.Checked && q.Count() > 0)
@@ -2028,415 +2042,11 @@ namespace PublicationsAnnualReport
 
 
     
-        public static string freefilename(string fnbase)
-        {
-            if (!File.Exists(fnbase))
-                return fnbase;
-
-            int n = 0;
-            string fn = fnbase;
-            do
-            {
-                n++;
-                fn = fnbase.Replace(".", n.ToString() + ".");
-            }
-            while (File.Exists(fn));
-            return fn;
-        }
-
-        private void SheetWithHeader(Excel.Worksheet sheet, int datarows)
-        {
-            for (int i = 0; i <= datarows; i++)
-                sheet.Rows.EntireRow.Insert(Excel.XlInsertShiftDirection.xlShiftDown, false);
-            foreach (string hh in hd.Keys)
-            {
-                sheet.Cells[1, hd[hh] + 1] = hh;
-            }
-            Excel.Range qa = sheet.Columns[hd[pubclass.authorstring] + 1];
-            qa.ColumnWidth = 50;
-            Excel.Range qt = sheet.Columns[hd[pubclass.titstring] + 1];
-            qt.ColumnWidth = 50;
-            //sheet.Columns[pubclass.titstring + 1].ColumnWidth = 300;
-            //sheet.Cells[1, pubclass.titstring + 1].EntireColumn.ColumnWidth = 300;
-            //Excel.Range titcol = ((Excel.Range)sheet.Cells[1, pubclass.titstring+1]).EntireColumn;
-            //titcol.ColumnWidth = 300;
-            //Excel.Range aucol = ((Excel.Range)sheet.Cells[1, pubclass.authorstring + 1]).EntireColumn;
-            //titcol.ColumnWidth = 400;
-        }
-
-        private string validsheetname(string catpar, List<string> sheetnames)
-        {
-            char[] nono = new char[] { ':', '\\', '/', '?', '*', '[', ']' };
-            string cat = catpar;
-            foreach (char c in nono)
-                cat = cat.Replace(c, '-');
-
-            if (cat == "History")
-                cat = "History.";
-
-            if (cat.Length > 30)
-            {
-                string[] w = cat.Split('(');
-                if (w.Length == 2 && w[0].Length > 24 && w[1].Length < 24)
-                {
-                    cat = w[0].Substring(0, 24 - w[1].Length) + "... (" + w[1];
-                }
-                else
-                {
-                    cat = cat.Substring(0, 27) + "...";
-                }
-            }
-
-            int i = 1;
-            while (sheetnames.Contains(cat))
-            {
-                cat = cat.Substring(0, cat.Length - i.ToString().Length) + i.ToString();
-                i++;
-            }
-            return cat;
-        }
-
-        private void AddExcelTabDiva(Excel.Workbook xl, Dictionary<string, Excel.Worksheet> sheetdict,SortedDictionary<string,List<pubclass>> dict,string dictkey, List<string> sheetnames, int maxcount, string inst)
-        {
-            memo(dictkey);
-            if (!dict.ContainsKey(dictkey))
-            {
-                memo("no publications for " + dictkey);
-                return;
-            }
-            Excel.Worksheet sheet = (Excel.Worksheet)xl.Sheets.Add();
-            sheet.Name = validsheetname(dictkey, sheetnames);
-            sheetnames.Add(sheet.Name);
-            SheetWithHeader(sheet, dict[dictkey].Count);
-            sheetdict.Add(dictkey, sheet);
-            int publine = 1;
-            foreach (pubclass pc in dict[dictkey])
-            {
-                if (dictkey == authorclass.nosubject && !pc.get_authorinstitution().Contains(inst))
-                    continue;
-                publine++;
-                pc.write_excelrow(sheet, publine, hd);
-                if (publine > maxcount)
-                    break;
-            }
-
-        }
 
         private void SubjectTabButton_Click(object sender, EventArgs e)
         {
-            //Create COM Objects. Create a COM object for everything that is referenced
-            Excel.Application xlApp = new Excel.Application();
-
-            //DialogResult dr = openFileDialog1.ShowDialog();
-            //if (dr != DialogResult.OK)
-            //    return;
-
-            //string folder = @"C:\Users\sja\OneDrive - Högskolan Dalarna\Dokument\Invärld\";
-            string folder = util.timestampfolder(@"C:\Temp\","DIVA per institution");
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
-
-            //string folder = @"C:\users\Lsj\Documents\Invärld\Könsfördelning publikationer\";
-            //memo("Reading " + openFileDialog1.FileName);
-
-            string fncat = freefilename(folder + "Diva by Category Scopus.xlsx");
-            Excel.Workbook xlWcat = xlApp.Workbooks.Add();
-            Dictionary<string, Excel.Worksheet> catsheetdict = new Dictionary<string, Excel.Worksheet>();
-            SortedDictionary<string, List<pubclass>> catpubdict = new SortedDictionary<string, List<pubclass>>();
-
-            string fnsubj = freefilename(folder + "Diva by ResearchSubject Scopus.xlsx");
-            Excel.Workbook xlWsubj = xlApp.Workbooks.Add();
-            Dictionary<string, Excel.Worksheet> subjsheetdict = new Dictionary<string, Excel.Worksheet>();
-            SortedDictionary<string, List<pubclass>> subjpubdict = new SortedDictionary<string, List<pubclass>>();
-            //Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-
-            string fnausubj = freefilename(folder + "Diva by AuthorSubject.xlsx");
-            Excel.Workbook xlWausubj = xlApp.Workbooks.Add();
-            Dictionary<string, Excel.Worksheet> ausubjsheetdict = new Dictionary<string, Excel.Worksheet>();
-            SortedDictionary<string, List<pubclass>> ausubjpubdict = new SortedDictionary<string, List<pubclass>>();
-            //Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-
-            string fnauinst = freefilename(folder + "Diva by AuthorInstitution.xlsx");
-            Excel.Workbook xlWauinst = xlApp.Workbooks.Add();
-            Dictionary<string, Excel.Worksheet> auinstsheetdict = new Dictionary<string, Excel.Worksheet>();
-            SortedDictionary<string, List<pubclass>> auinstpubdict = new SortedDictionary<string, List<pubclass>>();
-            //Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-
-            Dictionary<string, string> fninst = new Dictionary<string, string>();
-            Dictionary<string,Excel.Workbook> xldict = new Dictionary<string, Excel.Workbook>();
-            Dictionary<string, Dictionary<string, Excel.Worksheet>> sheetdictdict = new Dictionary<string, Dictionary<string, Excel.Worksheet>>();
-            
-            foreach (string inst in authorclass.institutions)
-            {
-                fninst.Add(inst, freefilename(folder + "DIVA "+ inst + ".xlsx"));
-                Excel.Workbook xl = xlApp.Workbooks.Add();
-                xldict.Add(inst, xl);
-                sheetdictdict.Add(inst, new Dictionary<string, Excel.Worksheet>());
-            }
- 
-
-            foreach (pubclass pc in publist)
-            {
-                //if (!pc.has(pubclass.scopusstring))
-                //    continue;
-
-                //foreach (string cat in pc.parse_categories())
-                //{
-                //    if (!catpubdict.ContainsKey(cat))
-                //        catpubdict.Add(cat, new List<pubclass>());
-                //    catpubdict[cat].Add(pc);
-                //}
-                //foreach (string rs in pc.parse_researchsubject())
-                //{
-                //    if (!subjpubdict.ContainsKey(rs))
-                //        subjpubdict.Add(rs, new List<pubclass>());
-                //    subjpubdict[rs].Add(pc);
-                //}
-                foreach (string aus in pc.get_authorsubjectalias())
-                {
-                    if (!ausubjpubdict.ContainsKey(aus))
-                        ausubjpubdict.Add(aus, new List<pubclass>());
-                    ausubjpubdict[aus].Add(pc);
-                }
-                foreach (string aus in pc.get_authorinstitution())
-                {
-                    if (!auinstpubdict.ContainsKey(aus))
-                        auinstpubdict.Add(aus, new List<pubclass>());
-                    auinstpubdict[aus].Add(pc);
-
-                    //Take care of authors with subject/inst mismatch:
-                    bool foundsubj = false;
-                    foreach (string ausubj in pc.get_authorsubjectalias())
-                        if (authorclass.instsubj[aus].Contains(ausubj))
-                            foundsubj = true;
-                    if (!foundsubj)
-                    {
-                        if (!ausubjpubdict.ContainsKey(authorclass.nosubject))
-                            ausubjpubdict.Add(authorclass.nosubject, new List<pubclass>());
-                        ausubjpubdict[authorclass.nosubject].Add(pc);
-                    }
-                }
-            }
-            memo("Sorted publications.");
-            memo(catpubdict.Count + " categories");
-            memo(subjpubdict.Count + " research subjects");
-            memo(ausubjpubdict.Count + " author subjects");
-            memo(auinstpubdict.Count + " author subjects");
-
-            foreach (string s in ausubjpubdict.Keys)
-                memo(s + "\t" + ausubjpubdict[s].Count);
-            foreach (string s in auinstpubdict.Keys)
-                memo(s + "\t" + auinstpubdict[s].Count);
-
-            //return;
-
-            int ncat = 0;
-            int maxcount = 333333;
-
-            List<string> sheetnames = new List<string>();
-
-
-            //foreach (string cat in catpubdict.Keys.Reverse())
-            //{
-            //    memo(cat);
-            //    Excel.Worksheet sheet = (Excel.Worksheet)xlWcat.Sheets.Add();
-
-            //    sheet.Name = validsheetname(cat, sheetnames);
-            //    sheetnames.Add(sheet.Name);
-            //    SheetWithHeader(sheet, catpubdict.Count);
-            //    catsheetdict.Add(cat, sheet);
-            //    int publine = 1;
-            //    foreach (pubclass pc in catpubdict[cat])
-            //    {
-            //        publine++;
-            //        pc.write_excelrow(sheet, publine, hd);
-            //        if (publine > maxcount)
-            //            break;
-            //    }
-            //    ncat++;
-            //    if (ncat > maxcount)
-            //        break;
-            //}
-            //memo("Saving to " + fncat);
-            //xlWcat.SaveAs(fncat);
-
-
-            //int nsubj = 0;
-            //foreach (string subj in subjpubdict.Keys.Reverse())
-            //{
-            //    memo(subj);
-            //    Excel.Worksheet sheet = (Excel.Worksheet)xlWsubj.Sheets.Add();
-            //    sheet.Name = validsheetname(subj, sheetnames);
-            //    sheetnames.Add(sheet.Name);
-            //    SheetWithHeader(sheet, subjpubdict.Count);
-            //    subjsheetdict.Add(subj, sheet);
-            //    int publine = 1;
-            //    foreach (pubclass pc in subjpubdict[subj])
-            //    {
-            //        publine++;
-            //        pc.write_excelrow(sheet, publine, hd);
-            //        if (publine > maxcount)
-            //            break;
-            //    }
-            //    nsubj++;
-            //    if (nsubj > maxcount)
-            //        break;
-            //}
-            //memo("Saving to " + fnsubj);
-            //xlWsubj.SaveAs(fnsubj);
-
-
-            //int nausubj = 0;
-            //foreach (string ausubj in ausubjpubdict.Keys.Reverse())
-            //{
-            //    memo(ausubj);
-            //    Excel.Worksheet sheet = (Excel.Worksheet)xlWausubj.Sheets.Add();
-            //    sheet.Name = validsheetname(ausubj, sheetnames);
-            //    sheetnames.Add(sheet.Name);
-            //    SheetWithHeader(sheet, ausubjpubdict.Count);
-            //    ausubjsheetdict.Add(ausubj, sheet);
-            //    int publine = 1;
-            //    foreach (pubclass pc in ausubjpubdict[ausubj])
-            //    {
-            //        publine++;
-            //        pc.write_excelrow(sheet, publine, hd);
-            //        if (publine > maxcount)
-            //            break;
-            //    }
-            //    nausubj++;
-            //    if (nausubj > maxcount)
-            //        break;
-            //}
-
-            //memo("Saving to " + fnausubj);
-            //xlWausubj.SaveAs(fnausubj);
-
-
-            //int nauinst = 0;
-            //foreach (string auinst in auinstpubdict.Keys.Reverse())
-            //{
-            //    memo(auinst);
-            //    Excel.Worksheet sheet = (Excel.Worksheet)xlWauinst.Sheets.Add();
-            //    sheet.Name = validsheetname(auinst, sheetnames);
-            //    sheetnames.Add(sheet.Name);
-            //    SheetWithHeader(sheet, auinstpubdict.Count);
-            //    auinstsheetdict.Add(auinst, sheet);
-            //    int publine = 1;
-            //    foreach (pubclass pc in auinstpubdict[auinst])
-            //    {
-            //        publine++;
-            //        pc.write_excelrow(sheet, publine, hd);
-            //        if (publine > maxcount)
-            //            break;
-            //    }
-            //    nauinst++;
-            //    if (nauinst > maxcount)
-            //        break;
-            //}
-
-
-
-            //int nauinst = 0;
-            foreach (string auinst in fninst.Keys)
-            {
-                memo(auinst);
-                //private void AddExcelTab(Excel.Workbook xl, Dictionary<string, Excel.Worksheet> sheetdict, SortedDictionary<string, List<pubclass>> dict, string dictkey, List<string> sheetnames, int maxcount)
-                if (authorclass.instsubj.ContainsKey(auinst))
-                    foreach (string subj in authorclass.instsubj[auinst])
-                    {
-                        AddExcelTabDiva(xldict[auinst], sheetdictdict[auinst], ausubjpubdict, subj, sheetnames, maxcount,auinst);
-                    }
-                AddExcelTabDiva(xldict[auinst], sheetdictdict[auinst], auinstpubdict, auinst, sheetnames, maxcount,auinst);
-                memo("Saving to " + fninst[auinst]);
-                xldict[auinst].SaveAs(fninst[auinst]);
-
-                //Excel.Worksheet sheet = (Excel.Worksheet)xldict[auinst].Sheets.Add();
-                //sheet.Name = validsheetname(auinst, sheetnames);
-                //sheetnames.Add(sheet.Name);
-                //SheetWithHeader(sheet, auinstpubdict.Count);
-                //auinstsheetdict.Add(auinst, sheet);
-                //int publine = 1;
-                //foreach (pubclass pc in auinstpubdict[auinst])
-                //{
-                //    publine++;
-                //    pc.write_excelrow(sheet, publine, hd);
-                //    if (publine > maxcount)
-                //        break;
-                //}
-                //nauinst++;
-                //if (nauinst > maxcount)
-                //    break;
-            }
-
-            //memo("Saving to " + fnauinst);
-            //xlWauinst.SaveAs(fnauinst);
-
-            foreach (string sc in catsheetdict.Keys)
-            {
-                Marshal.ReleaseComObject(catsheetdict[sc]);
-            }
-            foreach (string sc in subjsheetdict.Keys)
-            {
-                Marshal.ReleaseComObject(subjsheetdict[sc]);
-            }
-            foreach (string sc in ausubjsheetdict.Keys)
-            {
-                Marshal.ReleaseComObject(ausubjsheetdict[sc]);
-            }
-            foreach (string sc in auinstsheetdict.Keys)
-            {
-                Marshal.ReleaseComObject(auinstsheetdict[sc]);
-            }
-            //Then you can read from the sheet, keeping in mind that indexing in Excel is not 0 based. This just reads the cells and prints them back just as they were in the file.
-
-            //iterate over the rows and columns and print to the console as it appears in the file
-            //excel is not zero based!!
-            //for (int i = 1; i <= rowCount; i++)
-            //{
-            //    for (int j = 1; j <= colCount; j++)
-            //    {
-            //        //new line
-            //        if (j == 1)
-            //            Console.Write("\r\n");
-
-            //        //write the value to the console
-            //        if (xlRange.Cells[i, j] != null && xlRange.Cells[i, j].Value2 != null)
-            //            Console.Write(xlRange.Cells[i, j].Value2.ToString() + "\t");
-
-            //        //add useful things here!   
-            //    }
-            //}
-
-            //Lastly, the references to the unmanaged memory must be released. If this is not properly done, then there will be lingering processes that will hold the file access writes to your Excel workbook.
-
-            //cleanup
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            //rule of thumb for releasing com objects:
-            //  never use two dots, all COM objects must be referenced and released individually
-            //  ex: [somthing].[something].[something] is bad
-
-            //release com objects to fully kill excel process from running in the background
-
-            //close and release
-            xlWcat.Close();
-            Marshal.ReleaseComObject(xlWcat);
-
-            xlWsubj.Close();
-            Marshal.ReleaseComObject(xlWsubj);
-
-            xlWausubj.Close();
-            Marshal.ReleaseComObject(xlWausubj);
-
-            xlWauinst.Close();
-            Marshal.ReleaseComObject(xlWausubj);
-
-            //quit and release
-            xlApp.Quit();
-            Marshal.ReleaseComObject(xlApp);
-
-            memo("==== DONE ====");
+            FormExcel fx = new FormExcel(hd);
+            fx.Show();
         }
 
         public static double getdouble(dynamic cell)
@@ -2591,6 +2201,7 @@ namespace PublicationsAnnualReport
                 hbookclass notcountryhist = new hbookclass("Non-countries in country position");
                 hbookclass naffhist = new hbookclass("# affiliations");
                 hbookclass ncountryhist = new hbookclass("# countries per article");
+                hbookclass chinahist = new hbookclass("Chinese coauthor affiliations");
 
 
                 int nline = 0;
@@ -2675,6 +2286,32 @@ namespace PublicationsAnnualReport
                                 }
                                 if (countryalias.ContainsKey(country))
                                     country = countryalias[country];
+                                //if (country == "China")
+                                //{
+                                //    //memo(aff);
+                                //    bool founduni = false;
+                                //    string[] tofindlist = new string[] { "niversity", "nstitute", "ospital", "cent","cademy","ffice","ivision","aboratory" };
+                                //    string mainaff = aff;
+                                //    foreach (string tofind in tofindlist)
+                                //    {
+                                //        foreach (string aa in affparts.Reverse())
+                                //        {
+                                //            string ap = aa.Trim().Replace("Univ ", "University ").Replace("&"," and ").Replace("  "," ").ToLower();
+                                //            if (ap.EndsWith("Univ"))
+                                //                ap += "ersity";
+                                //            if (ap.Contains(tofind))
+                                //            {
+                                //                founduni = true;
+                                //                mainaff = ap;
+                                //            }
+                                //            if (ap.Contains("army"))
+                                //                memo(title);
+                                //        }
+                                //        if (founduni)
+                                //            break;
+                                //    }
+                                //    chinahist.Add(mainaff);
+                                //}
                                 //if (!country.Contains("Sweden"))
                                 //    continue;
                                 bool matchfound = false;
@@ -2882,6 +2519,8 @@ namespace PublicationsAnnualReport
                 memo("ndoi2 = " + ndoi2);
                 memo("===========================");
 
+                memo(chinahist.GetSHist());
+
             }
 
 
@@ -2943,7 +2582,7 @@ namespace PublicationsAnnualReport
 
                     foreach (authorclass auc in risdict[doi].authors)
                     {
-                        string inst = auc.getinstitution().ToLower();
+                        string inst = auc.getinstitution(false).ToLower();
                         if (!nodedict.ContainsKey(inst))
                         {
                             nodedict.Add(inst, -1);
@@ -3235,12 +2874,18 @@ namespace PublicationsAnnualReport
         private void button1_Click(object sender, EventArgs e)
         {
 
-            hbookclass th = new hbookclass("Test");
-            th.SetBins(new List<double>() { 0, 1, 2, 3 });
+            foreach (string inst in authorclass.institutions)
+            {
+                int n = (from c in caslist where c.getinstitution(false) == inst select c).Count();
+                memo(inst + "\t" + n);
+            }
 
-            th.Add(0.0);
-            th.Add(2.0);
-            memo(th.GetDHist());
+            //hbookclass th = new hbookclass("Test");
+            //th.SetBins(new List<double>() { 0, 1, 2, 3 });
+
+            //th.Add(0.0);
+            //th.Add(2.0);
+            //memo(th.GetDHist());
             //if (affclass.afflist.Count == 0)
             //{
             //    string fnaff = @"D:\Downloads\Swepub\afflist.txt";
@@ -3350,7 +2995,7 @@ namespace PublicationsAnnualReport
 
             foreach (authorclass ac in caslist)
             {
-                string inst = ac.getinstitution();
+                string inst = ac.getinstitution(false);
                 string subj = ac.getsubjectalias();
                 if (!audict.ContainsKey(inst))
                     audict.Add(inst, new SortedDictionary<string, SortedDictionary<string, int>>());
@@ -3371,7 +3016,7 @@ namespace PublicationsAnnualReport
                     {
                         int dummy = 0; //Tegmark
                     }
-                    string inst = ac.getinstitution();
+                    string inst = ac.getinstitution(false);
                     string subj = ac.getsubjectalias();
                     if (!audict[inst].ContainsKey(subj))
                         subj = authorclass.nosubject;
@@ -3548,9 +3193,9 @@ namespace PublicationsAnnualReport
                         authorclass ac = q.First();
                         ac.department = words[idept];
                         nmatch++;
-                        if (ac.getinstitution() != primulainstkey[inst])
+                        if (ac.getinstitution(true) != primulainstkey[inst])
                         {
-                            memo("Institution mismatch for \t" + ac.name + "\t" + ac.getinstitution() + "\t" + primulainstkey[inst]);
+                            memo("Institution mismatch for \t" + ac.name + "\t" + ac.getinstitution(true) + "\t" + primulainstkey[inst]);
                             ac.changeinstitution(primulainstkey[inst]);
                             nmismatchinst++;
                         }
@@ -3617,7 +3262,7 @@ namespace PublicationsAnnualReport
                     if (!ac.isHDa())
                         continue;
 
-                    string inst = ac.getinstitution();
+                    string inst = ac.getinstitution(false);
                     if (!instaudict[inst].ContainsKey(ac.name))
                     {
                         instaudict[inst].Add(ac.name, 1);
@@ -3736,6 +3381,10 @@ namespace PublicationsAnnualReport
             Dictionary<string, Dictionary<int, double>> yearpubcountScopus = new Dictionary<string, Dictionary<int, double>>();
             Dictionary<string, Dictionary<int, double>> yearcitecountScopus = new Dictionary<string, Dictionary<int, double>>();
 
+            Dictionary<string, Dictionary<int, List<double>>> yearcitelistKTH = new Dictionary<string, Dictionary<int, List<double>>>();
+            Dictionary<string, Dictionary<int, List<double>>> yearcitelistScopus = new Dictionary<string, Dictionary<int, List<double>>>();
+
+
             Dictionary<string, int> subjnodeiddict = new Dictionary<string, int>();
             int nsubj = 0;
             Dictionary<string, Dictionary<string, int>> subjnodedict = new Dictionary<string, Dictionary<string, int>>();
@@ -3767,6 +3416,8 @@ namespace PublicationsAnnualReport
                 yearpubcountzeroScopus.Add(inst, new Dictionary<int, double>());
                 yearpubcountScopus.Add(inst, new Dictionary<int, double>());
                 yearcitecountScopus.Add(inst, new Dictionary<int, double>());
+                yearcitelistKTH.Add(inst, new Dictionary<int, List<double>>());
+                yearcitelistScopus.Add(inst, new Dictionary<int, List<double>>());
                 for (int i=2018;i<=2022;i++)
                 {
                     yearpubcount[inst].Add(i, 0);
@@ -3781,6 +3432,8 @@ namespace PublicationsAnnualReport
                     yearpubcountzeroScopus[inst].Add(i, 0);
                     yearpubcountScopus[inst].Add(i, 0);
                     yearcitecountScopus[inst].Add(i, 0);
+                    yearcitelistKTH[inst].Add(i, new List<double>());
+                    yearcitelistScopus[inst].Add(i, new List<double>());
                 }
 
 
@@ -3817,7 +3470,7 @@ namespace PublicationsAnnualReport
                 if (!(!pc.dict.ContainsKey(pubclass.statusstring) || (pc.dict[pubclass.statusstring] != "submitted" && pc.dict[pubclass.statusstring] != "accepted")))
                     continue;
 
-                List<string> pubinstlist = pc.get_authorinstitution();
+                List<string> pubinstlist = pc.get_authorinstitution(false);
                 pubinstlist.Add("HDa");
                 foreach (string inst in pubinstlist)
                 {
@@ -3870,6 +3523,7 @@ namespace PublicationsAnnualReport
                         if (cites == 0)
                             yearpubcountzeroKTH[inst][pc.year]++;
                         yearcitecountKTH[inst][pc.year]+= cites;
+                        yearcitelistKTH[inst][pc.year].Add(cites);
                         if (pc.has(pubclass.kthCf_scxwostring))
                         {
                             cfhistdict[inst].Add(cf);
@@ -3948,6 +3602,7 @@ namespace PublicationsAnnualReport
                         //yearcitecountScopus[inst].Add(i, 0);
                         yearpubcountScopus[inst][pc.year]++;
                         yearcitecountScopus[inst][pc.year] += nscopus;
+                        yearcitelistScopus[inst][pc.year].Add(nscopus);
                         if (nscopus == 0)
                             yearpubcountzeroScopus[inst][pc.year]++;
                     }
@@ -3988,10 +3643,12 @@ namespace PublicationsAnnualReport
                 StringBuilder sbtotal = new StringBuilder("Totala publikationer:");
                 StringBuilder sbwith = new StringBuilder("Andel med citeringsdata (WoS eller Scopus):");
                 StringBuilder sbcite = new StringBuilder("WoS medelantal citeringar (ej självcitering):");
+                StringBuilder sbmedian = new StringBuilder("WoS medianantal citeringar (ej självcitering):");
                 StringBuilder sbzero = new StringBuilder("WoS andel ociterade publ (ej självcitering)");
                 StringBuilder sbcf = new StringBuilder("WoS medel fältnormaliserade citeringar (ej självcitering):");
                 StringBuilder sbjcf = new StringBuilder("WoS medel-JCF:");
                 StringBuilder sbscite = new StringBuilder("Scopus medelantal citeringar (ej självcitering):");
+                StringBuilder sbsmedian = new StringBuilder("Scopus medianantal citeringar (ej självcitering):");
                 StringBuilder sbszero = new StringBuilder("Scopus andel ociterade publ (ej självcitering):");
                 for (int i = 2022; i >= 2018; i--)
                 {
@@ -3999,6 +3656,7 @@ namespace PublicationsAnnualReport
                     sbtotal.Append("\t" + yearpubcount[inst][i]);
                     sbwith.Append("\t" + (100*(yearpubcount[inst][i]-yearpubcountmissing[inst][i])/ yearpubcount[inst][i]).ToString("N1")+" %");
                     sbcite.Append("\t" + (yearcitecountKTH[inst][i] / yearpubcountKTH[inst][i]).ToString("N2"));
+                    sbmedian.Append("\t" + util.Median(yearcitelistKTH[inst][i]));
                     sbzero.Append("\t" + (100*yearpubcountzeroKTH[inst][i] / yearpubcountKTH[inst][i]).ToString("N1")+" %");
                     if (yearpubcfcountKTH[inst][i] > 0)
                         sbcf.Append("\t" + (yearcitecfcountKTH[inst][i] / yearpubcfcountKTH[inst][i]).ToString("N2"));
@@ -4006,16 +3664,19 @@ namespace PublicationsAnnualReport
                         sbcf.Append("\t" + "(-)");
                     sbjcf.Append("\t" +  (yearcitejcfcountKTH[inst][i] / yearpubjcfcountKTH[inst][i]).ToString("N2"));
                     sbscite.Append("\t" + (yearcitecountScopus[inst][i] / yearpubcountScopus[inst][i]).ToString("N2"));
+                    sbsmedian.Append("\t" + util.Median(yearcitelistScopus[inst][i]));
                     sbszero.Append("\t" + (100 * yearpubcountzeroScopus[inst][i] / yearpubcountScopus[inst][i]).ToString("N1") + " %");
                 }
                 memo(sby.ToString());
                 memo(sbtotal.ToString());
                 memo(sbwith.ToString());
                 memo(sbcite.ToString());
+                memo(sbmedian.ToString());
                 memo(sbzero.ToString());
                 memo(sbcf.ToString());
                 memo(sbjcf.ToString());
                 memo(sbscite.ToString());
+                memo(sbsmedian.ToString());
                 memo(sbszero.ToString());
 
                 memo("=================citehist=========================");
@@ -4043,6 +3704,80 @@ namespace PublicationsAnnualReport
                 }
 
             }
+
+        }
+
+        private void Virtinstbutton_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "Gruppfil:";
+            DialogResult dr = openFileDialog1.ShowDialog();
+            if (dr != DialogResult.OK)
+            {
+                memo("File not selected");
+                return;
+            }
+
+            string fngrupp = openFileDialog1.FileName;
+            memo("Reading " + fngrupp);
+
+            int n = 0;
+            using (StreamReader sr = new StreamReader(fngrupp))
+            {
+                string hline = sr.ReadLine();
+                string[] hwords = hline.Split('\t');
+                int cascol = -1;
+                int subjectcol = -1;
+                for (int i = 0; i < hwords.Length; i++)
+                {
+                    if (hwords[i].ToUpper() == "CAS")
+                        cascol = i;
+                    if (hwords[i].ToUpper() == "ÄMNE")
+                        subjectcol = i;
+                }
+                while (!sr.EndOfStream)
+                {
+                    string line = sr.ReadLine();
+                    string[] words = line.Split('\t');
+                    if (words.Length < 2)
+                        continue;
+                    string cas = "";
+                    string subject = "";
+                    if (cascol >= 0)
+                        cas = words[cascol];
+                    if (subjectcol >= 0)
+                        subject = words[subjectcol];
+                    if (cas + subject == "")
+                    {
+                        for (int i = 0; i < words.Length; i++)
+                        {
+                            if (words[i].Length == 3 || words[i].Length == 4)
+                                cas = words[i].ToLower();
+                        }
+                    }
+                    string group = words[words.Length - 1]; // group name in last column
+                    if (String.IsNullOrEmpty(group))
+                        continue;
+                    n++;
+                    if (!String.IsNullOrEmpty(cas))
+                    {
+                        authorclass ac = authorclass.findbyCAS(cas, caslist);
+                        if (ac == null)
+                            continue;
+                        if (String.IsNullOrEmpty(group))
+                            continue;
+                        ac.addgroup(group, true);
+                    }
+                    else if (!String.IsNullOrEmpty(subject))
+                    {
+                        List<authorclass> aclist = authorclass.getbysubject(subject, caslist);
+                        foreach (authorclass ac in aclist)
+                            ac.addgroup(group, true);
+                    }
+                }
+            }
+
+            memo("Group entries: " + n);
+
 
         }
     }

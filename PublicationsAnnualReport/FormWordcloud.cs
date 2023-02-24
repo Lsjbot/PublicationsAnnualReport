@@ -240,7 +240,7 @@ namespace PublicationsAnnualReport
                             }
                             if (RB_inst.Checked)
                             {
-                                foreach (string inst in pc.get_authorinstitution())
+                                foreach (string inst in pc.get_authorinstitution(false))
                                 {
                                     if (!fdict.ContainsKey(inst))
                                         fdict.Add(inst, new Dictionary<string, int>());

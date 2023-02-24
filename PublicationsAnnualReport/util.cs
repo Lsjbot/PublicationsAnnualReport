@@ -190,6 +190,34 @@ namespace PublicationsAnnualReport
 
         }
 
+        public static double Median(List<double> numbers)
+        {
+            int numberCount = numbers.Count();
+            if (numberCount == 0)
+                return 0;
+            int halfIndex = numbers.Count() / 2;
+            var sortedNumbers = numbers.OrderBy(n => n);
+            double median;
+            if ((numberCount % 2) == 0)
+            {
+                median = ((sortedNumbers.ElementAt(halfIndex) +
+                    sortedNumbers.ElementAt(halfIndex-1)) / 2);
+            }
+            else
+            {
+                median = sortedNumbers.ElementAt(halfIndex);
+            }
+            return median;
+        }
+
+        public static string mergestringvector(string[] sv)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (string s in sv)
+                sb.Append(s);
+            return sb.ToString();
+        }
+
         public static string timestampfolder(string folder)
         {
             return timestampfolder(folder, "");
@@ -204,6 +232,24 @@ namespace PublicationsAnnualReport
             return folder + separator + prefix + now.Year + "-" + now.Month + "-" + now.Day + " " + now.Hour + "-" + now.Minute + @"\";
 
         }
+
+        public static string freefilename(string fnbase)
+        {
+            if (!File.Exists(fnbase))
+                return fnbase;
+
+            int n = 0;
+            string fn = fnbase;
+            do
+            {
+                n++;
+                fn = fnbase.Replace(".", n.ToString() + ".");
+            }
+            while (File.Exists(fn));
+            return fn;
+        }
+
+
 
         public static string format_authorlist(List<string> ls)
         {

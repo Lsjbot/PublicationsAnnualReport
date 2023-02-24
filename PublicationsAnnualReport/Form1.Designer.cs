@@ -68,6 +68,7 @@
             this.Primulabutton = new System.Windows.Forms.Button();
             this.Topauthorbutton = new System.Windows.Forms.Button();
             this.Citebutton = new System.Windows.Forms.Button();
+            this.Virtinstbutton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // Quitbutton
@@ -467,11 +468,22 @@
             this.Citebutton.UseVisualStyleBackColor = true;
             this.Citebutton.Click += new System.EventHandler(this.Citebutton_Click);
             // 
+            // Virtinstbutton
+            // 
+            this.Virtinstbutton.Location = new System.Drawing.Point(197, 558);
+            this.Virtinstbutton.Name = "Virtinstbutton";
+            this.Virtinstbutton.Size = new System.Drawing.Size(137, 39);
+            this.Virtinstbutton.TabIndex = 39;
+            this.Virtinstbutton.Text = "Skapa virtuella institutioner";
+            this.Virtinstbutton.UseVisualStyleBackColor = true;
+            this.Virtinstbutton.Click += new System.EventHandler(this.Virtinstbutton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 604);
+            this.Controls.Add(this.Virtinstbutton);
             this.Controls.Add(this.Citebutton);
             this.Controls.Add(this.Topauthorbutton);
             this.Controls.Add(this.Primulabutton);
@@ -560,6 +572,7 @@
         private System.Windows.Forms.Button Primulabutton;
         private System.Windows.Forms.Button Topauthorbutton;
         private System.Windows.Forms.Button Citebutton;
+        private System.Windows.Forms.Button Virtinstbutton;
     }
 }
 

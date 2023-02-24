@@ -90,9 +90,9 @@ namespace PublicationsAnnualReport
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
-                    var q = from authorclass c in parent.caslist where c.name == line.Trim() select c;
+                    var q = from authorclass c in Form1.caslist where c.name == line.Trim() select c;
                     if (q.Count() != 1)
-                        q = from authorclass c in parent.caslist where c.reversename() == line.Trim() select c;
+                        q = from authorclass c in Form1.caslist where c.reversename() == line.Trim() select c;
                     if (q.Count() != 1)
                         memo(line + " not found!");
                     else
@@ -130,7 +130,7 @@ namespace PublicationsAnnualReport
                 {
                     if (nodedict.ContainsKey(au))
                         continue;
-                    var q = from c in parent.publist
+                    var q = from c in Form1.publist
                             where c.casauthors.Contains(au)
                             select c;
                     if (q.Count() == 0) //skip unpublished
@@ -181,7 +181,7 @@ namespace PublicationsAnnualReport
             memo("Finding edges");
             foreach (string au in aulist)
             {
-                var q = from c in parent.publist
+                var q = from c in Form1.publist
                         where c.casauthors.Contains(au)
                         select c;
                 if (CBpeer.Checked)
@@ -267,7 +267,7 @@ namespace PublicationsAnnualReport
                         memo(au + " no subject");
                     if (nodedict.ContainsKey(nodekey))
                         continue;
-                    var q = from c in parent.publist
+                    var q = from c in Form1.publist
                             where c.casauthors.Contains(au)
                             select c;
                     if (q.Count() == 0) //skip unpublished
@@ -320,7 +320,7 @@ namespace PublicationsAnnualReport
             {
                 string nodekey = authorclass.subjectfromCAS(au, authorlist);
 
-                var q = from c in parent.publist
+                var q = from c in Form1.publist
                         where c.casauthors.Contains(au)
                         select c;
                 if (CBpeer.Checked)
@@ -393,7 +393,7 @@ namespace PublicationsAnnualReport
             usecaslist.Clear();
             if ( s == allstring)
             {
-                var q = from c in parent.caslist
+                var q = from c in Form1.caslist
                         select c;
                 foreach (authorclass ac in q)
                 {
@@ -404,7 +404,7 @@ namespace PublicationsAnnualReport
             }
             else 
             { 
-            var q = from c in parent.caslist
+            var q = from c in Form1.caslist
                     where c.affiliation.Contains(s)
                     select c;
                 foreach (authorclass ac in q)

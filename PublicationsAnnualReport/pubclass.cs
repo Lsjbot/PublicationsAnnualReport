@@ -496,11 +496,14 @@ namespace PublicationsAnnualReport
         public List<string> get_authorsubject()
         {
             List<string> ls = new List<string>();
-            foreach (authorclass au in authors)
+            foreach (authorclass aulocal in authors)
             {
-                if (!au.HDa_in_publication)
+                if (!aulocal.HDa_in_publication)
                     continue;
-                if (!au.isHDa())
+                if (!aulocal.isHDa())
+                    continue;
+                authorclass au = authorclass.findbyCAS(aulocal.CAS, Form1.caslist);
+                if (au == null)
                     continue;
                 string subj = au.getsubject();
                 if (!ls.Contains(subj))
@@ -509,18 +512,43 @@ namespace PublicationsAnnualReport
             return ls;
         }
 
-        public List<string> get_authorinstitution()
+        public List<string> get_authorgroup()
         {
             List<string> ls = new List<string>();
-            foreach (authorclass au in authors)
+            foreach (authorclass aulocal in authors)
             {
-                if (!au.HDa_in_publication)
+                if (!aulocal.HDa_in_publication)
                     continue;
-                if (!au.isHDa())
+                if (!aulocal.isHDa())
                     continue;
-                string subj = au.getinstitution();
-                if (!ls.Contains(subj))
-                    ls.Add(subj);
+                authorclass au = authorclass.findbyCAS(aulocal.CAS, Form1.caslist);
+                if (au == null)
+                    continue;
+                string group = au.getgroup();
+                if (String.IsNullOrEmpty(group))
+                    continue;
+                if (!ls.Contains(group))
+                    ls.Add(group);
+            }
+            return ls;
+        }
+
+        public List<string> get_authorinstitution(bool trueinst)
+        {
+            List<string> ls = new List<string>();
+            foreach (authorclass aulocal in authors)
+            {
+                if (!aulocal.HDa_in_publication)
+                    continue;
+                if (!aulocal.isHDa())
+                    continue;
+                authorclass au = authorclass.findbyCAS(aulocal.CAS, Form1.caslist);
+                if (au != null)
+                {
+                    string subj = au.getinstitution(trueinst);
+                    if (!ls.Contains(subj))
+                        ls.Add(subj);
+                }
             }
             return ls;
         }
