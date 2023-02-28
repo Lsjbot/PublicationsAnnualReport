@@ -1712,13 +1712,13 @@ namespace PublicationsAnnualReport
                 if (CBanyauthorpos.Checked)
                 {
                     qpub = from c in qpub
-                        where c.hasaffiliation(inst,true)
+                           where c.get_authorinstitution(false).Contains(inst)//hasaffiliation(inst,true)
                         select c;
                 }
                 else
                 {
                     qpub = from c in qpub
-                        where c.firstHDa.affiliation.Contains(inst)
+                           where c.firstHDa.getinstitution(false) == inst
                         select c;
                 }
             }
@@ -3257,11 +3257,14 @@ namespace PublicationsAnnualReport
                     cites = util.tryconvert(pc.dict[pubclass.kthC_scxwostring]);
                 //else if (pc.has(pubclass.scopuscitationstring))
                 //    cites = util.tryconvert(pc.dict[pubclass.scopuscitationstring]);
-                foreach (authorclass ac in pc.authors)
+                foreach (authorclass aclocal in pc.authors)
                 {
-                    if (!ac.isHDa())
+                    if (!aclocal.isHDa())
                         continue;
 
+                    authorclass ac = authorclass.findbyCAS(aclocal.CAS, caslist);
+                    if (ac == null)
+                        continue;
                     string inst = ac.getinstitution(false);
                     if (!instaudict[inst].ContainsKey(ac.name))
                     {
@@ -3491,9 +3494,11 @@ namespace PublicationsAnnualReport
                     double cfself = util.tryconvertdouble(pc.dict[pubclass.kthCf_sciwostring]);
                     citehist.Add(cites);
 
-
-                    pc.dict.Add(pubclass.kthcitationstring, pc.dict[pubclass.kthC_scxwostring]);
-                    pc.dict.Add(pubclass.kthfieldnormstring, pc.dict[pubclass.kthCf_scxwostring]);
+                    if (!pc.dict.ContainsKey(pubclass.kthcitationstring))
+                    {
+                        pc.dict.Add(pubclass.kthcitationstring, pc.dict[pubclass.kthC_scxwostring]);
+                        pc.dict.Add(pubclass.kthfieldnormstring, pc.dict[pubclass.kthCf_scxwostring]);
+                    }
 
                     //if (cf > 50)
                     //    memo(pc.dict[pubclass.kthfieldnormstring]);
@@ -3578,7 +3583,8 @@ namespace PublicationsAnnualReport
                         {
                             jcfhistdict[inst].Add(util.tryconvertdouble(pc.dict[pubclass.kthjcfstring]));
                         }
-                        pc.dict.Add(pubclass.kthjcf2string, pc.dict[pubclass.kthjcfstring]);
+                        if (!pc.dict.ContainsKey(pubclass.kthjcf2string))
+                            pc.dict.Add(pubclass.kthjcf2string, pc.dict[pubclass.kthjcfstring]);
                         foreach (string inst in pubinstlist)
                         {
                             yearpubjcfcountKTH[inst][pc.year]++;

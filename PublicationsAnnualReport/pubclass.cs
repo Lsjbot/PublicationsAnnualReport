@@ -413,9 +413,12 @@ namespace PublicationsAnnualReport
         {
             int nwith = 0;
             int ntot = 0;
-            foreach (authorclass au in authors)
+            foreach (authorclass aulocal in authors)
             {
+                authorclass au = authorclass.findbyCAS(aulocal.CAS,Form1.caslist);
                 ntot++;
+                if (au == null)
+                    continue;
                 foreach (string affil in au.affiliation)
                 {
                     if (affil.Contains(aff))
