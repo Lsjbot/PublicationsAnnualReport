@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using KnowledgePicker.WordCloud;
 using KnowledgePicker.WordCloud.Collections;
@@ -18,6 +15,8 @@ using SkiaSharp;
 using System.IO;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using WordcloudLsjbot;
+
 
 namespace PublicationsAnnualReport
 {
@@ -55,14 +54,18 @@ namespace PublicationsAnnualReport
         {
             int xsize = util.tryconvert(TBwidth.Text);
             int ysize = util.tryconvert(TBheight.Text);
-            var wcc = new WordCloudClass(xsize, ysize,CBbackpage.Checked,util.tryconvert(TBcontrast.Text),CBtitspecial.Checked);
+            var wcc = new WordcloudLsjbot.WordCloudClass(xsize, ysize,CBbackpage.Checked,util.tryconvert(TBcontrast.Text),CBtitspecial.Checked);
             wcc.SetFontSize(util.tryconvert(TBminfont.Text), util.tryconvert(TBmaxfont.Text));
-            wcc.SetSpecialColors(colorconvert(backgroundcolor),colorconvert(word1color),colorconvert(word2color));
+            wcc.SetBackgroundColor(colorconvert(backgroundcolor));
+            wcc.SetSpecialColors(colorconvert(word1color),colorconvert(word2color));
+            wcc.SetSpacing(util.tryconvert(TBxspace.Text), util.tryconvert(TByspace.Text));
             string shape = "rectangle";
             if (RBcircle.Checked)
                 shape = "circle";
             else if (RBellipse.Checked)
                 shape = "ellipse";
+            else if (RBtriangle.Checked)
+                shape = "triangle";
             wcc.SetShape(shape);
             if (wordcolor != null)
                 wcc.SetSpecificWordColor(colorconvert((Color)wordcolor));
@@ -83,13 +86,17 @@ namespace PublicationsAnnualReport
             }
             int nfail = wcc.Arrange();
             memo("nfail = " + nfail);
-            var data = wcc.Draw(title);
+            SKBitmap bitmap = wcc.Draw(title);
+            wcc.DrawToFile(title, imagefile, bitmap);
             pictureBox1.Width = xsize;
             pictureBox1.Height = ysize;
-            pictureBox1.Image = new Bitmap(new System.IO.MemoryStream(data.ToArray()));
-            using (var writer = File.Create(imagefile))
+            using (var stream = new MemoryStream())
             {
-                data.SaveTo(writer);
+                bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
+                stream.Seek(0, SeekOrigin.Begin);
+                var image = Image.FromStream(stream);
+                pictureBox1.Image = image;// new Bitmap(new System.IO.MemoryStream(data.ToArray()));
+                //image.Save(imagefile);
             }
         }
 
@@ -158,7 +165,7 @@ namespace PublicationsAnnualReport
 
         }
 
-        char[] trimchars = " .-,;:'?!".ToCharArray();
+        char[] trimchars = " .-,;:'?!0123456789()".ToCharArray();
         private string cookkey(string rawkey)
         {
             return rawkey.Trim(trimchars).ToLower();//.Replace(" ","_");
@@ -189,6 +196,36 @@ namespace PublicationsAnnualReport
                             string[] words = line.Split('\t');
                             if (!fdict[allword].ContainsKey(words[0]))
                                 fdict[allword].Add(words[0], util.tryconvert(words[1]));
+                        }
+                    }
+                }
+            }
+            else if (CBtext.Checked)
+            {
+                OpenFileDialog of = new OpenFileDialog();
+                if (of.ShowDialog() == DialogResult.OK)
+                {
+                    using (StreamReader sr = new StreamReader(of.FileName))
+                    {
+                        while (!sr.EndOfStream)
+                        {
+                            string line = sr.ReadLine();
+                            foreach (string rawkey in line.Split())
+                            {
+                                string key = cookkey(rawkey);
+                                if (String.IsNullOrEmpty(key))
+                                    continue;
+                                if (blacklist.Contains(key))
+                                    continue;
+                                if (fdict[allword].ContainsKey(key))
+                                {
+                                    fdict[allword][key]++;
+                                }
+                                else
+                                {
+                                    fdict[allword].Add(key, 1);
+                                }
+                            }
                         }
                     }
                 }
@@ -327,7 +364,9 @@ namespace PublicationsAnnualReport
             //MakeCloud(fdict["all"],util.unusedfn(folder+"wordcloud_all.png"),title);
             foreach (string s in fdict.Keys)
             {
-                string titstring = s + " "+source+" " + title;
+                string titstring = TBcloudtitle.Text;
+                if (String.IsNullOrEmpty(titstring))
+                    titstring = s + " " + source + " " + title;
                 if (CBfile.Checked)
                     titstring = "";
                 MakeCloud(fdict[s], util.unusedfn(folder + "cloud_" + s + source + "_.png"), titstring);
@@ -474,18 +513,11 @@ namespace PublicationsAnnualReport
 
             blacklist.Add("–");
             blacklist.Add("&amp");
-            blacklist.Add("(95%");
-            blacklist.Add("(n");
-            blacklist.Add("0,95");
-            blacklist.Add("1");
-            blacklist.Add("2");
-            blacklist.Add("2017");
             blacklist.Add("across");
             blacklist.Add("är");
             blacklist.Add("att");
             blacklist.Add("av");
             blacklist.Add("being");
-            blacklist.Add("ci");
             blacklist.Add("could");
             blacklist.Add("de");
             blacklist.Add("den");
@@ -537,6 +569,176 @@ namespace PublicationsAnnualReport
             blacklist.Add("under");
             blacklist.Add("way");
             blacklist.Add("will");
+            blacklist.Add("inte");
+            blacklist.Add("också");
+            blacklist.Add("även");
+            blacklist.Add("dock");
+            blacklist.Add("så");
+            blacklist.Add("därför");
+            blacklist.Add("endast");
+            blacklist.Add("särskilt");
+            blacklist.Add("t.ex.");
+            blacklist.Add("bl.a.");
+            blacklist.Add("mer");
+            blacklist.Add("det");
+            blacklist.Add("detta");
+            blacklist.Add("ett");
+            blacklist.Add("Ett");
+            blacklist.Add("den");
+            blacklist.Add("denna");
+            blacklist.Add("Den");
+            blacklist.Add("en");
+            blacklist.Add("En");
+            blacklist.Add("någon");
+            blacklist.Add("de");
+            blacklist.Add("dessa");
+            blacklist.Add("De");
+            blacklist.Add("alla");
+            blacklist.Add("samma");
+            blacklist.Add("när");
+            blacklist.Add("där");
+            blacklist.Add("hur");
+            blacklist.Add("som");
+            blacklist.Add("vad");
+            blacklist.Add("vilket");
+            blacklist.Add("att");
+            blacklist.Add("annat");
+            blacklist.Add("sådant");
+            blacklist.Add("sådan");
+            blacklist.Add("annan");
+            blacklist.Add("sådana");
+            blacklist.Add("andra");
+            blacklist.Add("olika");
+            blacklist.Add("vissa");
+            blacklist.Add("nya");
+            blacklist.Add("nya");
+            blacklist.Add("och");
+            blacklist.Add("eller");
+            blacklist.Add("som");
+            blacklist.Add("samt");
+            blacklist.Add("än");
+            blacklist.Add("men");
+            blacklist.Add("fall");
+            blacklist.Add("år");
+            blacklist.Add("krav");
+            blacklist.Add("barn");
+            blacklist.Add("stycket");
+            blacklist.Add("år");
+            blacklist.Add("beslut");
+            blacklist.Add("sätt");
+            blacklist.Add("a");
+            blacklist.Add("avsnitt");
+            blacklist.Add("förslag");
+            blacklist.Add("arbete");
+            blacklist.Add("uppgifter");
+            blacklist.Add("bestämmelser");
+            blacklist.Add("åtgärder");
+            blacklist.Add("personer");
+            blacklist.Add("procent");
+            blacklist.Add("regler");
+            blacklist.Add("myndigheter");
+            blacklist.Add("frågor");
+            blacklist.Add("lagen");
+            blacklist.Add("regeringen");
+            blacklist.Add("artikel");
+            blacklist.Add("lag");
+            blacklist.Add("verksamhet");
+            blacklist.Add("information");
+            blacklist.Add("rätt");
+            blacklist.Add("del");
+            blacklist.Add("tid");
+            blacklist.Add("if");
+            blacklist.Add("myndighet");
+            blacklist.Add("möjlighet");
+            blacklist.Add("Ds");
+            blacklist.Add("Sverige");
+            blacklist.Add("the");
+            blacklist.Add("det");
+            blacklist.Add("Det");
+            blacklist.Add("detta");
+            blacklist.Add("Detta");
+            blacklist.Add("den");
+            blacklist.Add("man");
+            blacklist.Add("de");
+            blacklist.Add("sig");
+            blacklist.Add("i");
+            blacklist.Add("av");
+            blacklist.Add("för");
+            blacklist.Add("till");
+            blacklist.Add("om");
+            blacklist.Add("på");
+            blacklist.Add("med");
+            blacklist.Add("enligt");
+            blacklist.Add("från");
+            blacklist.Add("I");
+            blacklist.Add("vid");
+            blacklist.Add("inom");
+            blacklist.Add("under");
+            blacklist.Add("genom");
+            blacklist.Add("mot");
+            blacklist.Add("mellan");
+            blacklist.Add("För");
+            blacklist.Add("efter");
+            blacklist.Add("över");
+            blacklist.Add("Enligt");
+            blacklist.Add("hos");
+            blacklist.Add("utan");
+            blacklist.Add("sin");
+            blacklist.Add("sina");
+            blacklist.Add("två");
+            blacklist.Add("första");
+            blacklist.Add("andra");
+            blacklist.Add("att");
+            blacklist.Add("om");
+            blacklist.Add("Om");
+            blacklist.Add("se");
+            blacklist.Add("vara");
+            blacklist.Add("kunna");
+            blacklist.Add("ha");
+            blacklist.Add("få");
+            blacklist.Add("är");
+            blacklist.Add("har");
+            blacklist.Add("kan");
+            blacklist.Add("ska");
+            blacklist.Add("skall");
+            blacklist.Add("får");
+            blacklist.Add("bör");
+            blacklist.Add("gäller");
+            blacklist.Add("innebär");
+            blacklist.Add("kommer");
+            blacklist.Add("måste");
+            blacklist.Add("avser");
+            blacklist.Add("blir");
+            blacklist.Add("finns");
+            blacklist.Add("avses");
+            blacklist.Add("anges");
+            blacklist.Add("skulle");
+            blacklist.Add("var");
+            blacklist.Add("vi");
+            blacklist.Add("fick");
+            blacklist.Add("ganska");
+            blacklist.Add("kanske");
+            blacklist.Add("dem");
+            blacklist.Add("många");
+            blacklist.Add("bara");
+            blacklist.Add("våra");
+            blacklist.Add("tredje");
+            blacklist.Add("blivit");
+            blacklist.Add("ju");
+            blacklist.Add("nog");
+            blacklist.Add("något");
+            blacklist.Add("mycket");
+            blacklist.Add("gör");
+            blacklist.Add("om");
+            blacklist.Add("g");
+            blacklist.Add("n");
+            blacklist.Add("f");
+            blacklist.Add("lite");
+            blacklist.Add("bra");
+            blacklist.Add("här");
+            blacklist.Add("o");
+            blacklist.Add("vårt");
+            blacklist.Add("något");
 
         }
 
@@ -670,6 +872,11 @@ namespace PublicationsAnnualReport
         }
 
         private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
         }

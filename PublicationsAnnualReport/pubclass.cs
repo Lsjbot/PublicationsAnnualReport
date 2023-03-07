@@ -89,6 +89,9 @@ namespace PublicationsAnnualReport
         public static string kthcitationstring = "Web of science citations";
         public static string kthfieldnormstring = "Web of science field normalized citations";
 
+        public static string firsthdagenderstring = "Kön HDa1";
+        public static string pubgroupstring = "Publikationskategori";
+
         public static Dictionary<int, string> kthtopdict = new Dictionary<int, string>() { { 1, kthtop1string }, { 5, kthtop5string }, { 10, kthtop10string }, { 25, kthtop25string }};
 
 

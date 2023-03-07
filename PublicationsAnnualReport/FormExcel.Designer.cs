@@ -32,15 +32,16 @@ namespace PublicationsAnnualReport
             this.Excelbutton = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.RB_instfile = new System.Windows.Forms.RadioButton();
-            this.RB_HDafile = new System.Windows.Forms.RadioButton();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.RB_authorsubject = new System.Windows.Forms.RadioButton();
-            this.RB_groupfile = new System.Windows.Forms.RadioButton();
-            this.RB_scopuscategory = new System.Windows.Forms.RadioButton();
-            this.GBinst = new System.Windows.Forms.GroupBox();
             this.RB_originstfile = new System.Windows.Forms.RadioButton();
+            this.RB_HDafile = new System.Windows.Forms.RadioButton();
+            this.RB_instfile = new System.Windows.Forms.RadioButton();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.RB_scopussubject = new System.Windows.Forms.RadioButton();
+            this.RB_scopuscategory = new System.Windows.Forms.RadioButton();
+            this.RB_groupfile = new System.Windows.Forms.RadioButton();
+            this.RB_authorsubject = new System.Windows.Forms.RadioButton();
+            this.GBinst = new System.Windows.Forms.GroupBox();
+            this.RBnotabs = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -75,17 +76,16 @@ namespace PublicationsAnnualReport
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Delas i filer:";
             // 
-            // RB_instfile
+            // RB_originstfile
             // 
-            this.RB_instfile.AutoSize = true;
-            this.RB_instfile.Checked = true;
-            this.RB_instfile.Location = new System.Drawing.Point(7, 20);
-            this.RB_instfile.Name = "RB_instfile";
-            this.RB_instfile.Size = new System.Drawing.Size(94, 17);
-            this.RB_instfile.TabIndex = 0;
-            this.RB_instfile.TabStop = true;
-            this.RB_instfile.Text = "Efter institution";
-            this.RB_instfile.UseVisualStyleBackColor = true;
+            this.RB_originstfile.AutoSize = true;
+            this.RB_originstfile.Location = new System.Drawing.Point(6, 44);
+            this.RB_originstfile.Name = "RB_originstfile";
+            this.RB_originstfile.Size = new System.Drawing.Size(127, 17);
+            this.RB_originstfile.TabIndex = 2;
+            this.RB_originstfile.TabStop = true;
+            this.RB_originstfile.Text = "Efter originalinstitution";
+            this.RB_originstfile.UseVisualStyleBackColor = true;
             // 
             // RB_HDafile
             // 
@@ -98,28 +98,53 @@ namespace PublicationsAnnualReport
             this.RB_HDafile.Text = "Hela HDa i en fil";
             this.RB_HDafile.UseVisualStyleBackColor = true;
             // 
+            // RB_instfile
+            // 
+            this.RB_instfile.AutoSize = true;
+            this.RB_instfile.Checked = true;
+            this.RB_instfile.Location = new System.Drawing.Point(7, 20);
+            this.RB_instfile.Name = "RB_instfile";
+            this.RB_instfile.Size = new System.Drawing.Size(94, 17);
+            this.RB_instfile.TabIndex = 0;
+            this.RB_instfile.TabStop = true;
+            this.RB_instfile.Text = "Efter institution";
+            this.RB_instfile.UseVisualStyleBackColor = true;
+            // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.RBnotabs);
             this.groupBox2.Controls.Add(this.RB_scopussubject);
             this.groupBox2.Controls.Add(this.RB_scopuscategory);
             this.groupBox2.Controls.Add(this.RB_groupfile);
             this.groupBox2.Controls.Add(this.RB_authorsubject);
             this.groupBox2.Location = new System.Drawing.Point(568, 233);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(200, 131);
+            this.groupBox2.Size = new System.Drawing.Size(200, 141);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Delas i flikar:";
             // 
-            // RB_authorsubject
+            // RB_scopussubject
             // 
-            this.RB_authorsubject.AutoSize = true;
-            this.RB_authorsubject.Location = new System.Drawing.Point(7, 20);
-            this.RB_authorsubject.Name = "RB_authorsubject";
-            this.RB_authorsubject.Size = new System.Drawing.Size(112, 17);
-            this.RB_authorsubject.TabIndex = 0;
-            this.RB_authorsubject.Text = "Efter författarämne";
-            this.RB_authorsubject.UseVisualStyleBackColor = true;
+            this.RB_scopussubject.AutoSize = true;
+            this.RB_scopussubject.Location = new System.Drawing.Point(6, 92);
+            this.RB_scopussubject.Name = "RB_scopussubject";
+            this.RB_scopussubject.Size = new System.Drawing.Size(115, 17);
+            this.RB_scopussubject.TabIndex = 3;
+            this.RB_scopussubject.TabStop = true;
+            this.RB_scopussubject.Text = "Efter Scopus-ämne";
+            this.RB_scopussubject.UseVisualStyleBackColor = true;
+            // 
+            // RB_scopuscategory
+            // 
+            this.RB_scopuscategory.AutoSize = true;
+            this.RB_scopuscategory.Location = new System.Drawing.Point(7, 68);
+            this.RB_scopuscategory.Name = "RB_scopuscategory";
+            this.RB_scopuscategory.Size = new System.Drawing.Size(127, 17);
+            this.RB_scopuscategory.TabIndex = 2;
+            this.RB_scopuscategory.TabStop = true;
+            this.RB_scopuscategory.Text = "Efter Scopus-kategori";
+            this.RB_scopuscategory.UseVisualStyleBackColor = true;
             // 
             // RB_groupfile
             // 
@@ -133,47 +158,35 @@ namespace PublicationsAnnualReport
             this.RB_groupfile.Text = "Enligt gruppfil";
             this.RB_groupfile.UseVisualStyleBackColor = true;
             // 
-            // RB_scopuscategory
+            // RB_authorsubject
             // 
-            this.RB_scopuscategory.AutoSize = true;
-            this.RB_scopuscategory.Location = new System.Drawing.Point(7, 68);
-            this.RB_scopuscategory.Name = "RB_scopuscategory";
-            this.RB_scopuscategory.Size = new System.Drawing.Size(127, 17);
-            this.RB_scopuscategory.TabIndex = 2;
-            this.RB_scopuscategory.TabStop = true;
-            this.RB_scopuscategory.Text = "Efter Scopus-kategori";
-            this.RB_scopuscategory.UseVisualStyleBackColor = true;
+            this.RB_authorsubject.AutoSize = true;
+            this.RB_authorsubject.Location = new System.Drawing.Point(7, 20);
+            this.RB_authorsubject.Name = "RB_authorsubject";
+            this.RB_authorsubject.Size = new System.Drawing.Size(112, 17);
+            this.RB_authorsubject.TabIndex = 0;
+            this.RB_authorsubject.Text = "Efter författarämne";
+            this.RB_authorsubject.UseVisualStyleBackColor = true;
             // 
             // GBinst
             // 
-            this.GBinst.Location = new System.Drawing.Point(568, 370);
+            this.GBinst.Location = new System.Drawing.Point(568, 383);
             this.GBinst.Name = "GBinst";
             this.GBinst.Size = new System.Drawing.Size(220, 304);
             this.GBinst.TabIndex = 4;
             this.GBinst.TabStop = false;
             this.GBinst.Text = "Institutioner";
             // 
-            // RB_originstfile
+            // RBnotabs
             // 
-            this.RB_originstfile.AutoSize = true;
-            this.RB_originstfile.Location = new System.Drawing.Point(6, 44);
-            this.RB_originstfile.Name = "RB_originstfile";
-            this.RB_originstfile.Size = new System.Drawing.Size(127, 17);
-            this.RB_originstfile.TabIndex = 2;
-            this.RB_originstfile.TabStop = true;
-            this.RB_originstfile.Text = "Efter originalinstitution";
-            this.RB_originstfile.UseVisualStyleBackColor = true;
-            // 
-            // RB_scopussubject
-            // 
-            this.RB_scopussubject.AutoSize = true;
-            this.RB_scopussubject.Location = new System.Drawing.Point(6, 92);
-            this.RB_scopussubject.Name = "RB_scopussubject";
-            this.RB_scopussubject.Size = new System.Drawing.Size(115, 17);
-            this.RB_scopussubject.TabIndex = 3;
-            this.RB_scopussubject.TabStop = true;
-            this.RB_scopussubject.Text = "Efter Scopus-ämne";
-            this.RB_scopussubject.UseVisualStyleBackColor = true;
+            this.RBnotabs.AutoSize = true;
+            this.RBnotabs.Location = new System.Drawing.Point(7, 115);
+            this.RBnotabs.Name = "RBnotabs";
+            this.RBnotabs.Size = new System.Drawing.Size(76, 17);
+            this.RBnotabs.TabIndex = 4;
+            this.RBnotabs.TabStop = true;
+            this.RBnotabs.Text = "(inga flikar)";
+            this.RBnotabs.UseVisualStyleBackColor = true;
             // 
             // FormExcel
             // 
@@ -209,5 +222,6 @@ namespace PublicationsAnnualReport
         private System.Windows.Forms.GroupBox GBinst;
         private System.Windows.Forms.RadioButton RB_originstfile;
         private System.Windows.Forms.RadioButton RB_scopussubject;
+        private System.Windows.Forms.RadioButton RBnotabs;
     }
 }

@@ -71,6 +71,14 @@ namespace PublicationsAnnualReport
             this.RBrectangle = new System.Windows.Forms.RadioButton();
             this.RBellipse = new System.Windows.Forms.RadioButton();
             this.RBcircle = new System.Windows.Forms.RadioButton();
+            this.CBtext = new System.Windows.Forms.CheckBox();
+            this.TBcloudtitle = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.RBtriangle = new System.Windows.Forms.RadioButton();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.TBxspace = new System.Windows.Forms.TextBox();
+            this.TByspace = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel2.SuspendLayout();
@@ -151,11 +159,12 @@ namespace PublicationsAnnualReport
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(1057, 600);
+            this.richTextBox1.Location = new System.Drawing.Point(1045, 766);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.Size = new System.Drawing.Size(189, 198);
             this.richTextBox1.TabIndex = 4;
             this.richTextBox1.Text = "";
+            this.richTextBox1.TextChanged += new System.EventHandler(this.richTextBox1_TextChanged);
             // 
             // CBkeywords
             // 
@@ -192,11 +201,11 @@ namespace PublicationsAnnualReport
             // CBfile
             // 
             this.CBfile.AutoSize = true;
-            this.CBfile.Location = new System.Drawing.Point(1068, 380);
+            this.CBfile.Location = new System.Drawing.Point(1034, 375);
             this.CBfile.Name = "CBfile";
-            this.CBfile.Size = new System.Drawing.Size(66, 17);
+            this.CBfile.Size = new System.Drawing.Size(104, 17);
             this.CBfile.TabIndex = 8;
-            this.CBfile.Text = "Extern fil";
+            this.CBfile.Text = "Extern fil viktlista";
             this.CBfile.UseVisualStyleBackColor = true;
             // 
             // CBbackpage
@@ -423,12 +432,13 @@ namespace PublicationsAnnualReport
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.RBtriangle);
             this.groupBox1.Controls.Add(this.RBrectangle);
             this.groupBox1.Controls.Add(this.RBellipse);
             this.groupBox1.Controls.Add(this.RBcircle);
-            this.groupBox1.Location = new System.Drawing.Point(1166, 182);
+            this.groupBox1.Location = new System.Drawing.Point(1166, 165);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(107, 100);
+            this.groupBox1.Size = new System.Drawing.Size(107, 117);
             this.groupBox1.TabIndex = 34;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Molnets form";
@@ -465,11 +475,89 @@ namespace PublicationsAnnualReport
             this.RBcircle.Text = "Cirkel";
             this.RBcircle.UseVisualStyleBackColor = true;
             // 
+            // CBtext
+            // 
+            this.CBtext.AutoSize = true;
+            this.CBtext.Location = new System.Drawing.Point(1034, 399);
+            this.CBtext.Name = "CBtext";
+            this.CBtext.Size = new System.Drawing.Size(86, 17);
+            this.CBtext.TabIndex = 35;
+            this.CBtext.Text = "Extern fil text";
+            this.CBtext.UseVisualStyleBackColor = true;
+            // 
+            // TBcloudtitle
+            // 
+            this.TBcloudtitle.Location = new System.Drawing.Point(1099, 19);
+            this.TBcloudtitle.Name = "TBcloudtitle";
+            this.TBcloudtitle.Size = new System.Drawing.Size(168, 20);
+            this.TBcloudtitle.TabIndex = 36;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(1037, 22);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(56, 13);
+            this.label9.TabIndex = 37;
+            this.label9.Text = "Cloud title:";
+            // 
+            // RBtriangle
+            // 
+            this.RBtriangle.AutoSize = true;
+            this.RBtriangle.Location = new System.Drawing.Point(7, 91);
+            this.RBtriangle.Name = "RBtriangle";
+            this.RBtriangle.Size = new System.Drawing.Size(63, 17);
+            this.RBtriangle.TabIndex = 3;
+            this.RBtriangle.TabStop = true;
+            this.RBtriangle.Text = "Triangel";
+            this.RBtriangle.UseVisualStyleBackColor = true;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(1040, 602);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(94, 13);
+            this.label10.TabIndex = 38;
+            this.label10.Text = "Horizontal spacing";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(1040, 623);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(82, 13);
+            this.label11.TabIndex = 39;
+            this.label11.Text = "Vertical spacing";
+            // 
+            // TBxspace
+            // 
+            this.TBxspace.Location = new System.Drawing.Point(1140, 599);
+            this.TBxspace.Name = "TBxspace";
+            this.TBxspace.Size = new System.Drawing.Size(48, 20);
+            this.TBxspace.TabIndex = 40;
+            this.TBxspace.Text = "2";
+            // 
+            // TByspace
+            // 
+            this.TByspace.Location = new System.Drawing.Point(1140, 623);
+            this.TByspace.Name = "TByspace";
+            this.TByspace.Size = new System.Drawing.Size(48, 20);
+            this.TByspace.TabIndex = 41;
+            this.TByspace.Text = "3";
+            // 
             // FormWordcloud
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1279, 1023);
+            this.Controls.Add(this.TByspace);
+            this.Controls.Add(this.TBxspace);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.TBcloudtitle);
+            this.Controls.Add(this.CBtext);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.TBmaxfont);
             this.Controls.Add(this.TBminfont);
@@ -561,5 +649,13 @@ namespace PublicationsAnnualReport
         private System.Windows.Forms.RadioButton RBrectangle;
         private System.Windows.Forms.RadioButton RBellipse;
         private System.Windows.Forms.RadioButton RBcircle;
+        private System.Windows.Forms.CheckBox CBtext;
+        private System.Windows.Forms.TextBox TBcloudtitle;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.RadioButton RBtriangle;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox TBxspace;
+        private System.Windows.Forms.TextBox TByspace;
     }
 }

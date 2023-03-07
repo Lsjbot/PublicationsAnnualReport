@@ -111,9 +111,13 @@ namespace PublicationsAnnualReport
                 memo("no entry for " + dictkey);
                 return;
             }
-            var q = from c in dict[dictkey]
-                    where c.get_authorinstitution(RB_originstfile.Checked).Contains(inst)
-                    select c;
+            var q = from c in dict[dictkey] select c;
+            if (inst != hdainst)
+            {
+                q = from c in q
+                        where c.get_authorinstitution(RB_originstfile.Checked).Contains(inst)
+                        select c;
+            }
             if (q.Count() == 0)
             {
                 memo("no publications from "+inst+" for " + dictkey);
@@ -137,6 +141,7 @@ namespace PublicationsAnnualReport
 
         }
 
+        string hdainst = "HDa";
 
         private void Excelbutton_Click(object sender, EventArgs e)
         {
@@ -148,7 +153,10 @@ namespace PublicationsAnnualReport
             //    return;
 
             //string folder = @"C:\Users\sja\OneDrive - Högskolan Dalarna\Dokument\Invärld\";
-            string folder = util.timestampfolder(@"C:\Temp\", "DIVA per institution");
+            string folderbase = "DIVA per institution";
+            if (RB_HDafile.Checked)
+                folderbase = "DIVA HDa";
+            string folder = util.timestampfolder(@"C:\Temp\", folderbase);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
@@ -184,14 +192,26 @@ namespace PublicationsAnnualReport
             Dictionary<string, Excel.Workbook> xldict = new Dictionary<string, Excel.Workbook>();
             Dictionary<string, Dictionary<string, Excel.Worksheet>> sheetdictdict = new Dictionary<string, Dictionary<string, Excel.Worksheet>>();
 
-            foreach (string inst in authorclass.institutions)
+            if (RB_HDafile.Checked)
             {
-                if (!cbdict[inst].Checked)
-                    continue;
-                fninst.Add(inst, util.freefilename(folder + "DIVA " + inst + ".xlsx"));
+                //string inst = "HDa";
+                fninst.Add(hdainst, util.freefilename(folder + "DIVA " + hdainst + ".xlsx"));
                 Excel.Workbook xl = xlApp.Workbooks.Add();
-                xldict.Add(inst, xl);
-                sheetdictdict.Add(inst, new Dictionary<string, Excel.Worksheet>());
+                xldict.Add(hdainst, xl);
+                sheetdictdict.Add(hdainst, new Dictionary<string, Excel.Worksheet>());
+
+            }
+            else
+            {
+                foreach (string inst in authorclass.institutions)
+                {
+                    if (!cbdict[inst].Checked)
+                        continue;
+                    fninst.Add(inst, util.freefilename(folder + "DIVA " + inst + ".xlsx"));
+                    Excel.Workbook xl = xlApp.Workbooks.Add();
+                    xldict.Add(inst, xl);
+                    sheetdictdict.Add(inst, new Dictionary<string, Excel.Worksheet>());
+                }
             }
 
 
@@ -249,6 +269,10 @@ namespace PublicationsAnnualReport
                         ausubjpubdict[authorclass.nosubject].Add(pc);
                     }
                 }
+                if (!auinstpubdict.ContainsKey(hdainst))
+                    auinstpubdict.Add(hdainst, new List<pubclass>());
+                auinstpubdict[hdainst].Add(pc);
+
             }
             memo("Sorted publications.");
             memo(catpubdict.Count + " categories");

@@ -244,7 +244,9 @@ namespace PublicationsAnnualReport
                 hd.Add(pubclass.kthcitationstring, headsplit.Length + 3);
                 hd.Add(pubclass.kthfieldnormstring, headsplit.Length + 4);
                 hd.Add(pubclass.kthtopxstring, headsplit.Length + 5);
-                hd.Add(pubclass.kthjcf2string, headsplit.Length + 5);
+                hd.Add(pubclass.kthjcf2string, headsplit.Length + 6);
+                hd.Add(pubclass.firsthdagenderstring, headsplit.Length + 7);
+                hd.Add(pubclass.pubgroupstring, headsplit.Length + 8);
 
                 int npub = 0;
 
@@ -1000,6 +1002,14 @@ namespace PublicationsAnnualReport
                     }
                 }
                 memo(ks);
+
+                foreach (pubclass pp in q)
+                {
+                    if (!pp.has(pubclass.firsthdagenderstring))
+                        pp.dict.Add(pubclass.firsthdagenderstring, pp.firstHDa.gender.ToString());
+                    if (!pp.has(pubclass.pubgroupstring))
+                        pp.dict.Add(pubclass.pubgroupstring, rr.rowtitle);
+                }
                 string ss = "summa";
                 for (int year = endyear; year >= startyear; year--)
                 {
@@ -3784,6 +3794,11 @@ namespace PublicationsAnnualReport
 
             memo("Group entries: " + n);
 
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
 
         }
     }

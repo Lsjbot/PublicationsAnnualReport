@@ -68,6 +68,10 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WordcloudLsjbot, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\source\repos\WordcloudLsjbot\WordcloudLsjbot\bin\Debug\netstandard1.6\WordcloudLsjbot.dll</HintPath>
+    </Reference>
     <Reference Include="Xceed.Words.NET">
       <HintPath>\\dustaff\home\sja\Documents\Visual Studio 2013\Projects\validering-behörighet\packages\DocX.1.2.1\lib\Xceed.Words.NET.dll</HintPath>
     </Reference>
