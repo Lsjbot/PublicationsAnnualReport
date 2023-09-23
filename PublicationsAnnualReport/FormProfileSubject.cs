@@ -112,6 +112,7 @@ namespace PublicationsAnnualReport
             Dictionary<string, int> nodedict = new Dictionary<string, int>();
             Dictionary<int, Dictionary<int, int>> edgedict = new Dictionary<int, Dictionary<int, int>>();
             Dictionary<string, KnownColor> colordict = new Dictionary<string, KnownColor>();
+            List<string> hasedge = new List<string>();
             KnownColor[] knowncol = util.getallcolors();
             int nextcolor = 0;
 
@@ -121,6 +122,55 @@ namespace PublicationsAnnualReport
                 namecolorlist = read_namelist();
             }
 
+            int j = 1;
+            memo("Finding nodes");
+            foreach (string au in aulist)
+            {
+                if (nodedict.ContainsKey(au))
+                    continue;
+                var q = from c in Form1.publist
+                        where c.casauthors.Contains(au)
+                        select c;
+                if (q.Count() == 0) //skip unpublished
+                    continue;
+                nodedict.Add(au, j);
+                j++;
+            }
+
+            memo("Finding edges");
+            foreach (string au in aulist)
+            {
+                var q = from c in Form1.publist
+                        where c.casauthors.Contains(au)
+                        select c;
+                if (CBpeer.Checked)
+                    q = from c in q where c.dict[pubclass.contenttypestring] == "Refereegranskat" select c;
+                foreach (pubclass pc in q)
+                {
+                    //bool beyondau = false;
+                    foreach (string au2 in pc.casauthors)
+                    {
+                        if (!aulist.Contains(au2))
+                            continue;
+                        if (nodedict[au2] <= nodedict[au])
+                            continue;
+                        if (!edgedict.ContainsKey(nodedict[au]))
+                        {
+                            edgedict.Add(nodedict[au], new Dictionary<int, int>());
+                            if (!hasedge.Contains(au))
+                                hasedge.Add(au);
+                        }
+                        if (!edgedict[nodedict[au]].ContainsKey(nodedict[au2]))
+                        {
+                            edgedict[nodedict[au]].Add(nodedict[au2], 0);
+                            if (!hasedge.Contains(au2))
+                                hasedge.Add(au2);
+                        }
+                        edgedict[nodedict[au]][nodedict[au2]]++;
+                    }
+                }
+            }
+
             memo("Writing nodes to " + fn);
             using (StreamWriter sw = new StreamWriter(fn))
             {
@@ -128,18 +178,16 @@ namespace PublicationsAnnualReport
                 int i = 1;
                 foreach (string au in aulist)
                 {
-                    if (nodedict.ContainsKey(au))
+                    if (!nodedict.ContainsKey(au))
                         continue;
-                    var q = from c in Form1.publist
-                            where c.casauthors.Contains(au)
-                            select c;
-                    if (q.Count() == 0) //skip unpublished
-                        continue;
+
+                    i = nodedict[au];
                     string label = "";
                     string profile = authorclass.profilefromCAS(au, authorlist);
                     string institution = authorclass.institutionfromCAS(au, authorlist);
                     if (profileshort.ContainsKey(profile))
                         profile = profileshort[profile];
+                    memo(authorclass.namefromCAS(au, authorlist) + "\t" + au);
                     //memo(profile);
                     if (CBname.Checked)
                         label += " " + authorclass.namefromCAS(au, authorlist);
@@ -172,37 +220,10 @@ namespace PublicationsAnnualReport
                         colordict.Add(colorkey, knowncol[nextcolor]);
                         nextcolor++;
                     }
-                    sw.WriteLine(i + ";" + label + ";"+ String.Format("#{0:X6}",Color.FromKnownColor(colordict[colorkey]).ToArgb()&0x00ffffff));   //";#0000FF");
-                    nodedict.Add(au, i);
+                    if (CB_publess.Checked || hasedge.Contains(au))
+                        sw.WriteLine(i + ";" + label + ";" + String.Format("#{0:X6}", Color.FromKnownColor(colordict[colorkey]).ToArgb() & 0x00ffffff));   //";#0000FF");
+                    //nodedict.Add(au, i);
                     i++;
-                }
-            }
-
-            memo("Finding edges");
-            foreach (string au in aulist)
-            {
-                var q = from c in Form1.publist
-                        where c.casauthors.Contains(au)
-                        select c;
-                if (CBpeer.Checked)
-                    q = from c in q where c.dict[pubclass.contenttypestring] == "Refereegranskat" select c;
-                foreach (pubclass pc in q)
-                {
-                    //bool beyondau = false;
-                    foreach (string au2 in pc.casauthors)
-                    {
-                        if (!aulist.Contains(au2))
-                            continue;
-                        if (nodedict[au2] <= nodedict[au])
-                            continue;
-                        if (!edgedict.ContainsKey(nodedict[au]))
-                        {
-                            edgedict.Add(nodedict[au], new Dictionary<int,int>());
-                        }
-                        if (!edgedict[nodedict[au]].ContainsKey(nodedict[au2]))
-                            edgedict[nodedict[au]].Add(nodedict[au2], 0);
-                        edgedict[nodedict[au]][nodedict[au2]]++;
-                    }
                 }
             }
 
@@ -210,12 +231,12 @@ namespace PublicationsAnnualReport
             memo("Writing edges to " + fn2);
             using (StreamWriter sw = new StreamWriter(fn2))
             {
-                sw.WriteLine("Source;Target;Weight");
+                sw.WriteLine("Source;Target;Weight;Label");
                 foreach (int iau in edgedict.Keys)
                 {
                     foreach (int iau2 in edgedict[iau].Keys )
                     {
-                        sw.WriteLine(iau+";"+iau2+";"+edgedict[iau][iau2]);
+                        sw.WriteLine(iau+";"+iau2+";"+edgedict[iau][iau2] + ";" + edgedict[iau][iau2]);
                     }
                 }
             }
@@ -278,6 +299,7 @@ namespace PublicationsAnnualReport
                     if (profileshort.ContainsKey(profile))
                         profile = profileshort[profile];
                     //memo(profile);
+                    memo(authorclass.namefromCAS(au, authorlist) + "\t" + au);
                     if (CBname.Checked)
                         label += " " + authorclass.namefromCAS(au, authorlist);
                     if (CBcas.Checked)
@@ -404,13 +426,33 @@ namespace PublicationsAnnualReport
             }
             else 
             { 
-            var q = from c in Form1.caslist
+                var q = from c in Form1.caslist
                     where c.affiliation.Contains(s)
                     select c;
                 foreach (authorclass ac in q)
                 {
-                    authorlist.Add(ac);
-                    usecaslist.Add(ac.CAS);
+                    if (!usecaslist.Contains(ac.CAS))
+                    {
+                        authorlist.Add(ac);
+                        usecaslist.Add(ac.CAS);
+                        if (CB_otherHDa.Checked)
+                        {
+                            var qq = from c in Form1.publist
+                                     where c.casauthors.Contains(ac.CAS)
+                                     select c;
+                            foreach (var pub in qq)
+                            {
+                                foreach (string cocas in pub.casauthors)
+                                {
+                                    if (!usecaslist.Contains(cocas))
+                                    {
+                                        usecaslist.Add(cocas);
+                                        authorlist.Add(authorclass.findbyCAS(cocas, Form1.caslist));
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 if (profileshort.ContainsKey(s))
                     selectstring = profileshort[s] + "-";

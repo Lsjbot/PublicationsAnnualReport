@@ -51,8 +51,11 @@
             this.TBcluster = new System.Windows.Forms.TrackBar();
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.RB_individual = new System.Windows.Forms.RadioButton();
             this.RB_subject = new System.Windows.Forms.RadioButton();
+            this.RB_individual = new System.Windows.Forms.RadioButton();
+            this.CB_external = new System.Windows.Forms.CheckBox();
+            this.CB_otherHDa = new System.Windows.Forms.CheckBox();
+            this.CB_publess = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.TBcluster)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -114,7 +117,7 @@
             this.TBdir.Name = "TBdir";
             this.TBdir.Size = new System.Drawing.Size(284, 20);
             this.TBdir.TabIndex = 7;
-            this.TBdir.Text = "\\\\dustaff\\home\\sja\\Documents\\Invärld\\energi\\";
+            this.TBdir.Text = "C:\\Temp\\Gephi\\";
             this.TBdir.TextChanged += new System.EventHandler(this.TBdir_TextChanged);
             // 
             // label1
@@ -276,17 +279,6 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "GEPHI unit";
             // 
-            // RB_individual
-            // 
-            this.RB_individual.AutoSize = true;
-            this.RB_individual.Location = new System.Drawing.Point(9, 18);
-            this.RB_individual.Name = "RB_individual";
-            this.RB_individual.Size = new System.Drawing.Size(70, 17);
-            this.RB_individual.TabIndex = 0;
-            this.RB_individual.TabStop = true;
-            this.RB_individual.Text = "Individual";
-            this.RB_individual.UseVisualStyleBackColor = true;
-            // 
             // RB_subject
             // 
             this.RB_subject.AutoSize = true;
@@ -298,11 +290,56 @@
             this.RB_subject.Text = "Subject";
             this.RB_subject.UseVisualStyleBackColor = true;
             // 
+            // RB_individual
+            // 
+            this.RB_individual.AutoSize = true;
+            this.RB_individual.Location = new System.Drawing.Point(9, 18);
+            this.RB_individual.Name = "RB_individual";
+            this.RB_individual.Size = new System.Drawing.Size(70, 17);
+            this.RB_individual.TabIndex = 0;
+            this.RB_individual.TabStop = true;
+            this.RB_individual.Text = "Individual";
+            this.RB_individual.UseVisualStyleBackColor = true;
+            // 
+            // CB_external
+            // 
+            this.CB_external.AutoSize = true;
+            this.CB_external.Enabled = false;
+            this.CB_external.Location = new System.Drawing.Point(125, 459);
+            this.CB_external.Name = "CB_external";
+            this.CB_external.Size = new System.Drawing.Size(151, 17);
+            this.CB_external.TabIndex = 24;
+            this.CB_external.Text = "Include external coauthors";
+            this.CB_external.UseVisualStyleBackColor = true;
+            // 
+            // CB_otherHDa
+            // 
+            this.CB_otherHDa.AutoSize = true;
+            this.CB_otherHDa.Location = new System.Drawing.Point(125, 436);
+            this.CB_otherHDa.Name = "CB_otherHDa";
+            this.CB_otherHDa.Size = new System.Drawing.Size(151, 17);
+            this.CB_otherHDa.TabIndex = 25;
+            this.CB_otherHDa.Text = "Include other HDa authors";
+            this.CB_otherHDa.UseVisualStyleBackColor = true;
+            // 
+            // CB_publess
+            // 
+            this.CB_publess.AutoSize = true;
+            this.CB_publess.Location = new System.Drawing.Point(125, 411);
+            this.CB_publess.Name = "CB_publess";
+            this.CB_publess.Size = new System.Drawing.Size(195, 17);
+            this.CB_publess.TabIndex = 26;
+            this.CB_publess.Text = "Include authors with no publications";
+            this.CB_publess.UseVisualStyleBackColor = true;
+            // 
             // FormProfileSubject
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(733, 544);
+            this.Controls.Add(this.CB_publess);
+            this.Controls.Add(this.CB_otherHDa);
+            this.Controls.Add(this.CB_external);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.TBcluster);
@@ -362,5 +399,8 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton RB_subject;
         private System.Windows.Forms.RadioButton RB_individual;
+        private System.Windows.Forms.CheckBox CB_external;
+        private System.Windows.Forms.CheckBox CB_otherHDa;
+        private System.Windows.Forms.CheckBox CB_publess;
     }
 }

@@ -3769,8 +3769,18 @@ namespace PublicationsAnnualReport
                             if (words[i].Length == 3 || words[i].Length == 4)
                                 cas = words[i].ToLower();
                         }
+                        if (cas == "")
+                            continue;
                     }
-                    string group = words[words.Length - 1]; // group name in last column
+                    int igroup = words.Length - 1;
+                    string group = "";
+                    do
+                    {
+                        group = words[igroup]; // group name in last column
+                        igroup--;
+                    }
+                    while (String.IsNullOrEmpty(group));
+                    group = group.Trim(); 
                     if (String.IsNullOrEmpty(group))
                         continue;
                     n++;
