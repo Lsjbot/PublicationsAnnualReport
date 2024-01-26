@@ -623,7 +623,10 @@ namespace PublicationsAnnualReport
                         listpub = document.AddList(apa.Trim(), 0, ListItemType.Numbered, 1);
                     else
                         document.AddListItem(listpub, apa.Trim());
-                    listpub.Items.Last().Append(sortlist[apa][1]).Italic();
+                    if (util.is_latin(sortlist[apa][1]))
+                        listpub.Items.Last().Append(sortlist[apa][1]).Italic();
+                    else
+                        listpub.Items.Last().Append(sortlist[apa][1]);
                     listpub.Items.Last().Append(sortlist[apa][2]);
 
                 }
@@ -699,11 +702,28 @@ namespace PublicationsAnnualReport
                 foreach (string inst in authorclass.institutions)
                     AnnrepTable(inst);
             }
+            else if (CBpersubject.Checked)
+            {
+                foreach (string inst in authorclass.institutions)
+                {
+                    memo("");
+                    memo("#################################################");
+                    memo("======== " + inst + " ===========");
+                    memo("#################################################");
+                    memo("");
+                    var dum = authorclass.instsubj[inst];
+                    dum.Sort();
+                    foreach (string subj in dum)
+                    {
+                        AnnrepTable(subj);
+                    }
+                }
+            }
             else
                 AnnrepTable(""); //everything
         }
 
-        private List<reportrowclass> ReportsRows(int reporttype) //reporttype = 0 for annual report, reporttype = 1 for UFN-granskning
+        private List<reportrowclass> ReportRows(int reporttype) //reporttype = 0 for annual report, reporttype = 1 for UFN-granskning
         {
             List<reportrowclass> rowlist = new List<reportrowclass>();
 
@@ -766,20 +786,34 @@ namespace PublicationsAnnualReport
             else if (reporttype == 1)
             {
                 reportrowclass r2 = new reportrowclass();
-                r2.rowtitle = "Böcker";
+                r2.rowtitle = "Böcker (ref)";
                 r2.pubtypes.Add("Bok");
                 //r1.refstatus = 0;
                 r2.contenttypes.Add(pubclass.ctrefstring);
-                r2.contenttypes.Add(pubclass.ctscistring);
                 rowlist.Add(r2);
 
+                reportrowclass r2b = new reportrowclass();
+                r2b.rowtitle = "Böcker (övr)";
+                r2b.pubtypes.Add("Bok");
+                //r1.refstatus = 0;
+                r2b.contenttypes.Add(pubclass.ctpopstring);
+                r2b.contenttypes.Add(pubclass.ctscistring);
+                rowlist.Add(r2b);
+
                 reportrowclass r3 = new reportrowclass();
-                r3.rowtitle = "Kapitel";
+                r3.rowtitle = "Kapitel (ref)";
                 r3.pubtypes.Add("Kapitel i bok, del av antologi");
                 //r1.refstatus = 0;
                 r3.contenttypes.Add(pubclass.ctrefstring);
-                r3.contenttypes.Add(pubclass.ctscistring);
                 rowlist.Add(r3);
+
+                reportrowclass r3b = new reportrowclass();
+                r3b.rowtitle = "Kapitel (övr)";
+                r3b.pubtypes.Add("Kapitel i bok, del av antologi");
+                //r1.refstatus = 0;
+                r3b.contenttypes.Add(pubclass.ctpopstring);
+                r3b.contenttypes.Add(pubclass.ctscistring);
+                rowlist.Add(r3b);
 
                 reportrowclass r4 = new reportrowclass();
                 r4.rowtitle = "Konferens (ref)";
@@ -854,11 +888,136 @@ namespace PublicationsAnnualReport
                 //r8.refstatus = -1;
                 r10.contenttypes = contenttypelist.Keys.ToList();
                 rowlist.Add(r10);
+
+                reportrowclass r13 = new reportrowclass();
+                r13.rowtitle = "(varav refereegranskat)";
+                r13.pubtypes.Add("Artikel i tidskrift");
+                r13.pubtypes.Add("Artikel, forskningsöversikt");
+                r13.pubtypes.Add("Konferensbidrag");
+                r13.pubtypes.Add("Bok");
+                r13.pubtypes.Add("Kapitel i bok, del av antologi");
+                r13.contenttypes.Add(pubclass.ctrefstring);
+                rowlist.Add(r13);
+
+                reportrowclass r12 = new reportrowclass();
+                r12.rowtitle = "Ref + 3*böcker, wconf = 1";
+                r12.pubtypes.Add("Artikel i tidskrift");
+                r12.pubtypes.Add("Artikel, forskningsöversikt");
+                r12.pubtypes.Add("Konferensbidrag");
+                r12.pubtypes.Add("Bok");
+                r12.pubtypes.Add("Kapitel i bok, del av antologi");
+                r12.weighted = true;
+                r12.weights.Add("Artikel i tidskrift", 1);
+                r12.weights.Add("Artikel, forskningsöversikt", 1);
+                //r12.weights.Add("Konferensbidrag", 1/(double)3);
+                r12.weights.Add("Konferensbidrag", 1);
+                r12.weights.Add("Bok", 3);
+                r12.weights.Add("Kapitel i bok, del av antologi", 1);
+                //r12.refstatus = 1;
+                r12.contenttypes.Add(pubclass.ctrefstring);
+                rowlist.Add(r12);
+
+                reportrowclass r14 = new reportrowclass();
+                r14.rowtitle = "Ref + 3*böcker, wconf=1/3";
+                r14.pubtypes.Add("Artikel i tidskrift");
+                r14.pubtypes.Add("Artikel, forskningsöversikt");
+                r14.pubtypes.Add("Konferensbidrag");
+                r14.pubtypes.Add("Bok");
+                r14.pubtypes.Add("Kapitel i bok, del av antologi");
+                r14.weighted = true;
+                r14.weights.Add("Artikel i tidskrift", 1);
+                r14.weights.Add("Artikel, forskningsöversikt", 1);
+                r14.weights.Add("Konferensbidrag", 1/(double)3);
+                //r14.weights.Add("Konferensbidrag", 1);
+                r14.weights.Add("Bok", 3);
+                r14.weights.Add("Kapitel i bok, del av antologi", 1);
+                //r14.refstatus = 1;
+                r14.contenttypes.Add(pubclass.ctrefstring);
+                rowlist.Add(r14);
+
+                foreach (var rr in rowlist)
+                    rr.perinst = !CBauthorpin.Checked;
             }
 
             return rowlist;
 
         }
+
+        private double pubsum(IEnumerable<pubclass> q,reportrowclass rr, char gender, int year, string aff, bool frac, bool perinst,string inst)
+        {
+            double sum = 0;
+            IEnumerable<pubclass> qm;
+            bool instorsubj = authorclass.institutions.Contains(inst);
+            if (gender == ' ')
+            {
+                qm = from c in q where c.year == year select c;
+            }
+            else
+            {
+                qm = from c in q where c.year == year where c.firstHDa.gender == gender select c;
+            }
+            if (frac)
+            {
+                if (rr.weighted)
+                {
+                    foreach (pubclass pc in qm)
+                    {
+                        sum += pc.fraction(aff,util.tryconvert(TBfractak.Text))*rr.weights[pc.dict[pubclass.pubtypestring]];
+                    }
+                }
+                else
+                {
+                    foreach (pubclass pc in qm)
+                    {
+                        sum += pc.fraction(aff, util.tryconvert(TBfractak.Text));
+                    }
+                }
+            }
+            else
+            {
+                if (rr.weighted)
+                {
+                    if (perinst)
+                    {
+                        foreach (pubclass pc in qm)
+                        {
+                            sum += rr.weights[pc.dict[pubclass.pubtypestring]];
+                        }
+                    }
+                    else
+                    {
+                        foreach (pubclass pc in qm)
+                        {
+                            List<string> afflist = instorsubj ? pc.get_authorinstitution(true, false) : pc.get_authorsubjectalias();
+                            foreach (string ii in afflist)
+                            {
+                                if (ii==inst)
+                                    sum += rr.weights[pc.dict[pubclass.pubtypestring]];
+                            }
+                        }
+                    }
+                }
+                else if (perinst)
+                {
+                    sum = qm.Count();
+                }
+                else
+                {
+                    foreach (pubclass pc in qm)
+                    {
+                        List<string> afflist = instorsubj ? pc.get_authorinstitution(true, false) : pc.get_authorsubjectalias();
+                        foreach (string ii in afflist)
+                        {
+                            if (ii == inst)
+                                sum++;
+                        }    
+                    }
+                }
+            }
+
+            return sum;
+        }
+
         private void AnnrepTable(string inst)
         {
             string header = "Publikationstyp";
@@ -871,7 +1030,7 @@ namespace PublicationsAnnualReport
             }
 
             int endyear = util.tryconvert(TB_endyear.Text);
-            if (endyear < 0)
+            if (endyear < startyear)
             {
                 memo("Invalid endyear " + TB_endyear.Text);
                 return;
@@ -883,13 +1042,13 @@ namespace PublicationsAnnualReport
             }
             if (CBfraction.Checked)
             {
-                header += "\t Fraktionerat:";
+                header += "\t Fraktionerat (tak="+TBfractak.Text+"):";
                 for (int year = endyear; year >= startyear; year--)
                 {
                     header += "\t" + year;
                 }
             }
-            if (CB_perinst.Checked)
+            if (!String.IsNullOrEmpty(inst)) 
             {
                 memo("");
                 memo("======== " + inst + " ===========");
@@ -900,7 +1059,7 @@ namespace PublicationsAnnualReport
             int reporttype = 0;
             if (!CBannrep.Checked)
                 reporttype = 1;
-            List<reportrowclass> rowlist = ReportsRows(reporttype);
+            List<reportrowclass> rowlist = ReportRows(reporttype);
             string dir = "";
             if (CB_publists.Checked)
             {
@@ -943,17 +1102,35 @@ namespace PublicationsAnnualReport
                 //memo("q3 " + q.Count().ToString());
                 if (!String.IsNullOrEmpty(inst))
                 {
-                    if (CBanyauthorpos.Checked)
+                    if (authorclass.institutions.Contains(inst))
                     {
-                        q = from c in q
-                            where c.get_authorinstitution(false).Contains(inst)
-                            select c;
+                        if (CBanyauthorpos.Checked)
+                        {
+                            q = from c in q
+                                where c.get_authorinstitution(false, true).Contains(inst)
+                                select c;
+                        }
+                        else
+                        {
+                            q = from c in q
+                                where c.firstHDa.getinstitution(false).Contains(inst)
+                                select c;
+                        }
                     }
                     else
                     {
-                        q = from c in q
-                            where c.firstHDa.getinstitution(false).Contains(inst)
-                            select c;
+                        if (CBanyauthorpos.Checked)
+                        {
+                            q = from c in q
+                                where c.get_authorsubjectalias().Contains(inst)
+                                select c;
+                        }
+                        else
+                        {
+                            q = from c in q
+                                where c.firstHDa.getsubjectalias().Contains(inst)
+                                select c;
+                        }
                     }
                     if (CB_publists.Checked && q.Count() > 0)
                     {
@@ -966,10 +1143,13 @@ namespace PublicationsAnnualReport
                 string footerstring = "ÅR HDa " + (DateTime.Now.Year - 1);
                 for (int year = endyear; year >= startyear; year--)
                 {
-                    var qm = from c in q where c.year == year where c.firstHDa.gender == gender select c;
-                    ms += "\t" + qm.Count();
+                    //ms += "\t" + qm.Count();
+                    ms += "\t" + pubsum(q, rr, gender, year, aff,false,rr.perinst,inst);
                     if (CB_publists.Checked && String.IsNullOrEmpty(inst))
-                        MakeWordfile(qm, year, rr, gender, dir, "Högskolan Dalarna",footerstring);
+                    {
+                        var qm = from c in q where c.year == year where c.firstHDa.gender == gender select c;
+                        MakeWordfile(qm, year, rr, gender, dir, "Högskolan Dalarna", footerstring);
+                    }
                     //return;
                 }
                 if (CBfraction.Checked)
@@ -977,8 +1157,9 @@ namespace PublicationsAnnualReport
                     ms += "\t"; //fraktionerat:
                     for (int year = endyear; year >= startyear; year--)
                     {
-                        var qm = from c in q where c.year == year where c.firstHDa.gender == gender select c.fraction(aff);
-                        ms += "\t" + qm.Sum();
+                        //var qm = from c in q where c.year == year where c.firstHDa.gender == gender select c.fraction(aff);
+                        //ms += "\t" + qm.Sum();
+                        ms += "\t" + pubsum(q, rr, gender, year, aff,true, rr.perinst, inst).ToString("F2");
                         //return;
                     }
                 }
@@ -987,18 +1168,22 @@ namespace PublicationsAnnualReport
                 gender = 'F';
                 for (int year = endyear; year >= startyear; year--)
                 {
-                    var qk = from c in q where c.year == year where c.firstHDa.gender == gender select c;
-                    ks += "\t" + qk.Count();
+                    //ks += "\t" + qk.Count();
+                    ks += "\t" + pubsum(q, rr, gender, year, aff,false, rr.perinst, inst);
                     if (CB_publists.Checked && String.IsNullOrEmpty(inst))
-                        MakeWordfile(qk, year, rr, gender, dir, "Högskolan Dalarna",footerstring);
+                    {
+                        var qk = from c in q where c.year == year where c.firstHDa.gender == gender select c;
+                        MakeWordfile(qk, year, rr, gender, dir, "Högskolan Dalarna", footerstring);
+                    }
                 }
                 if (CBfraction.Checked)
                 {
                     ks += "\t"; //fraktionerat:
                     for (int year = endyear; year >= startyear; year--)
                     {
-                        var qk = from c in q where c.year == year where c.firstHDa.gender == gender select c.fraction(aff);
-                        ks += "\t" + qk.Sum();
+                        //var qk = from c in q where c.year == year where c.firstHDa.gender == gender select c.fraction(aff);
+                        //ks += "\t" + qk.Sum();
+                        ks += "\t" + pubsum(q, rr, gender, year, aff, true, rr.perinst, inst).ToString("F2");
                     }
                 }
                 memo(ks);
@@ -1013,8 +1198,9 @@ namespace PublicationsAnnualReport
                 string ss = "summa";
                 for (int year = endyear; year >= startyear; year--)
                 {
+                    //ss += "\t" + qs.Count();
+                    ss += "\t" + pubsum(q, rr, ' ', year, aff,false, rr.perinst, inst);
                     var qs = from c in q where c.year == year select c;
-                    ss += "\t" + qs.Count();
                     if (!totalrow)
                     {
                         foreach (pubclass pc in qs)
@@ -1040,8 +1226,9 @@ namespace PublicationsAnnualReport
                     ss += "\t"; //fraktionerat:
                     for (int year = endyear; year >= startyear; year--)
                     {
-                        var qs = from c in q where c.year == year select c.fraction(aff);
-                        ss += "\t" + qs.Sum();
+                        //var qs = from c in q where c.year == year select c.fraction(aff);
+                        //ss += "\t" + qs.Sum();
+                        ss += "\t" + pubsum(q, rr, ' ', year, aff, true, rr.perinst, inst).ToString("F2");
                     }
                 }
                 memo(ss);
@@ -1722,7 +1909,7 @@ namespace PublicationsAnnualReport
                 if (CBanyauthorpos.Checked)
                 {
                     qpub = from c in qpub
-                           where c.get_authorinstitution(false).Contains(inst)//hasaffiliation(inst,true)
+                           where c.get_authorinstitution(false,true).Contains(inst)//hasaffiliation(inst,true)
                         select c;
                 }
                 else
@@ -1753,7 +1940,7 @@ namespace PublicationsAnnualReport
                 
                 double w = 1;
                 if (CBfraction.Checked)
-                    w = pub.fraction(aff);
+                    w = pub.fraction(aff,util.tryconvert(TBfractak.Text));
                 npubtotal += w;
 
                 if (pub.dict[pubclass.pidstring] == "941186")
@@ -2055,7 +2242,21 @@ namespace PublicationsAnnualReport
 
         private void SubjectTabButton_Click(object sender, EventArgs e)
         {
-            FormExcel fx = new FormExcel(hd);
+            int startyear = util.tryconvert(TB_startyear.Text);
+            if (startyear < 0)
+            {
+                memo("Invalid startyear " + TB_startyear.Text);
+                return;
+            }
+
+            int endyear = util.tryconvert(TB_endyear.Text);
+            if (endyear < startyear)
+            {
+                memo("Invalid endyear " + TB_endyear.Text);
+                return;
+            }
+
+            FormExcel fx = new FormExcel(hd,startyear,endyear);
             fx.Show();
         }
 
@@ -3483,7 +3684,7 @@ namespace PublicationsAnnualReport
                 if (!(!pc.dict.ContainsKey(pubclass.statusstring) || (pc.dict[pubclass.statusstring] != "submitted" && pc.dict[pubclass.statusstring] != "accepted")))
                     continue;
 
-                List<string> pubinstlist = pc.get_authorinstitution(false);
+                List<string> pubinstlist = pc.get_authorinstitution(false,true);
                 pubinstlist.Add("HDa");
                 foreach (string inst in pubinstlist)
                 {
@@ -3809,6 +4010,115 @@ namespace PublicationsAnnualReport
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+        }
+
+        private void swepubbutton_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "Swepub-fil:";
+            openFileDialog1.Filter = "Text files (*.txt)|*.txt|CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+            DialogResult dr = openFileDialog1.ShowDialog();
+            if (dr != DialogResult.OK)
+            {
+                memo("File not selected");
+                return;
+            }
+
+            Dictionary<int, string> idoa = new Dictionary<int, string>();
+            Dictionary<string, int> truecount = new Dictionary<string, int>();
+            Dictionary<string, int> falsecount = new Dictionary<string, int>();
+
+
+            string key = "duplicate_ids";
+            string oa = "open_access";
+
+            string fn = openFileDialog1.FileName;
+            memo("Reading " + fn);
+
+            using (StreamReader sr = new StreamReader(fn))
+            {
+                sr.ReadLine(); //throw away query header
+
+                string hline = sr.ReadLine();
+
+                int ikey = -1;
+                int ioa = -1;
+                string[] hwords = hline.Split('\t');
+                for (int i = 0; i < hwords.Length; i++)
+                {
+                    if (hwords[i] == key)
+                        ikey = i;
+                    if (hwords[i] == oa)
+                        ioa = i;
+
+                }
+
+                string rex = @"org:du\-(\d+)";
+
+                while (!sr.EndOfStream)
+                {
+                    string line = sr.ReadLine();
+                    string[] words = util.splitcsv(line, '\t');//line.Split('\t');
+
+                    string ids = words[ikey];
+                    int id = -1;
+                    foreach (Match m in Regex.Matches(ids, rex))
+                    {
+                        memo(m.Groups[1].Value);
+                        id = util.tryconvert(m.Groups[1].Value);
+                    }
+                    if (id < 0)
+                        memo("Fail for " + ids);
+
+                    idoa.Add(id, words[ioa].ToUpper());
+                }
+
+                int startyear = 2021;
+                int endyear = 2022;
+                for (int year = startyear; year <= endyear; year++)
+                {
+                    truecount.Clear();
+                    falsecount.Clear();
+                    truecount.Add("HDa", 0);
+                    foreach (string inst in authorclass.institutions)
+                        truecount.Add(inst, 0);
+                    falsecount.Add("HDa", 0);
+                    foreach (string inst in authorclass.institutions)
+                        falsecount.Add(inst, 0);
+                    foreach (pubclass pc in publist)
+                    {
+                        if (!pc.has(pubclass.nbnstring))
+                            continue;
+                        if (pc.year != year)
+                            continue;
+                        int id = util.tryconvert(pc.dict[pubclass.nbnstring].Split('-')[1]);
+                        if (id < 0)
+                            continue;
+                        if (!idoa.ContainsKey(id))
+                            continue;
+                        if (idoa[id] == "TRUE")
+                        {
+                            truecount["HDa"]++;
+                            foreach (string inst in pc.get_authorinstitution(true,true))
+                                truecount[inst]++;
+                        }
+                        else
+                        {
+                            falsecount["HDa"]++;
+                            foreach (string inst in pc.get_authorinstitution(true,true))
+                                falsecount[inst]++;
+                        }
+                    }
+                    memo("År " + year);
+                    memo("Inst\tOpen access\tNot open access");
+                    foreach (string inst in truecount.Keys)
+                    {
+                        memo(inst + "\t" + truecount[inst] + "\t" + falsecount[inst]);
+                    }
+                }
+
+
+            }
 
         }
     }

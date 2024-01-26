@@ -45,6 +45,7 @@ namespace PublicationsAnnualReport
         public static string norskastring = "Norska listan";
         public static string isbnstring = "ISBN";
         public static string contributorstring = "Contributors";
+        public static string nbnstring = "NBN";
 
 
         public static string ctrefstring = "Refereegranskat";
@@ -133,6 +134,7 @@ namespace PublicationsAnnualReport
             {"Maskinteknik","Maskin och material"},
             {"Matematik","Fysik och matematik"},
             {"Matematikdidaktik","Matematikdidaktik"},
+            {"matematikdidaktik","Matematikdidaktik"},
             {"Materialteknik","Maskin och material"},
             {"Materialvetenskap","Maskin och material"},
             {"Medicinsk vetenskap","Medicinsk vetenskap"},
@@ -161,6 +163,7 @@ namespace PublicationsAnnualReport
             {"Svenska språket","Svenska"},
             {"Turismvetenskap","Turismvetenskap"},
             {"Vårdvetenskap","Vårdvetenskap"},
+            {"Vägteknik","Byggteknik"},
 
         };
 
@@ -412,7 +415,7 @@ namespace PublicationsAnnualReport
             return false;
         }
 
-        public double fraction(string aff)
+        public double fraction(string aff,int fractak)
         {
             int nwith = 0;
             int ntot = 0;
@@ -422,12 +425,17 @@ namespace PublicationsAnnualReport
                 ntot++;
                 if (au == null)
                     continue;
-                foreach (string affil in au.affiliation)
+                else if (aff == "Dalarna")
+                    nwith++;
+                else
                 {
-                    if (affil.Contains(aff))
+                    foreach (string affil in au.affiliation)
                     {
-                        nwith++;
-                        break;
+                        if (affil.Contains(aff))
+                        {
+                            nwith++;
+                            break;
+                        }
                     }
                 }
             }
@@ -436,8 +444,10 @@ namespace PublicationsAnnualReport
             if (nwith == ntot)
                 return 1;
             double frac = nwith / (double)ntot;
-            if (frac < 0.1)
-                frac = 0.1;
+            if (ntot > fractak && nwith < fractak)
+                frac = nwith / (double)fractak;
+            if (frac < (double)1/fractak)
+                frac = (double)1 / fractak;
             return frac;
         }
 
@@ -539,7 +549,7 @@ namespace PublicationsAnnualReport
             return ls;
         }
 
-        public List<string> get_authorinstitution(bool trueinst)
+        public List<string> get_authorinstitution(bool trueinst,bool perinst)
         {
             List<string> ls = new List<string>();
             foreach (authorclass aulocal in authors)
@@ -552,7 +562,7 @@ namespace PublicationsAnnualReport
                 if (au != null)
                 {
                     string subj = au.getinstitution(trueinst);
-                    if (!ls.Contains(subj))
+                    if (!perinst || !ls.Contains(subj))
                         ls.Add(subj);
                 }
             }

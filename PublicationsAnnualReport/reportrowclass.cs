@@ -14,5 +14,8 @@ namespace PublicationsAnnualReport
         //public int refstatus = 0; //0 = all, 1 = ref only, -1 = nonref only, -2 = pop-sci only
         public bool pubonly = false; //only published or everything
         public bool nosubacc = true; //skip submitted and accepted
+        public bool weighted = false;
+        public Dictionary<string, double> weights = new Dictionary<string, double>();
+        public bool perinst = true;
     }
 }

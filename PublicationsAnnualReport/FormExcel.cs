@@ -17,11 +17,15 @@ namespace PublicationsAnnualReport
     {
         Dictionary<string, int> hd = new Dictionary<string, int>(); //header of Diva file
         Dictionary<string, CheckBox> cbdict = new Dictionary<string, CheckBox>();
+        int startyear = 0;
+        int endyear = 9999;
 
-        public FormExcel(Dictionary<string, int> hdpar)
+        public FormExcel(Dictionary<string, int> hdpar,int startyearpar,int endyearpar)
         {
             InitializeComponent();
             hd = hdpar;
+            startyear = startyearpar;
+            endyear = endyearpar;
 
             int x0 = 5;// GBinst.Location.X;
             int y0 = 5;// GBinst.Location.Y;
@@ -115,7 +119,7 @@ namespace PublicationsAnnualReport
             if (inst != hdainst)
             {
                 q = from c in q
-                        where c.get_authorinstitution(RB_originstfile.Checked).Contains(inst)
+                        where c.get_authorinstitution(RB_originstfile.Checked,true).Contains(inst)
                         select c;
             }
             if (q.Count() == 0)
@@ -131,7 +135,7 @@ namespace PublicationsAnnualReport
             int publine = 1;
             foreach (pubclass pc in q)
             {
-                if (dictkey == authorclass.nosubject && !pc.get_authorinstitution(RB_originstfile.Checked).Contains(inst))
+                if (dictkey == authorclass.nosubject && !pc.get_authorinstitution(RB_originstfile.Checked,true).Contains(inst))
                     continue;
                 publine++;
                 pc.write_excelrow(sheet, publine, hd);
@@ -213,10 +217,15 @@ namespace PublicationsAnnualReport
                     sheetdictdict.Add(inst, new Dictionary<string, Excel.Worksheet>());
                 }
             }
-
+            
 
             foreach (pubclass pc in Form1.publist)
             {
+                if (pc.year < startyear)
+                    continue;
+                if (pc.year > endyear)
+                    continue;
+
                 if (pc.has(pubclass.scopusstring))
                 {
                     //    continue;
@@ -249,7 +258,7 @@ namespace PublicationsAnnualReport
                     augrouppubdict[aus].Add(pc);
                 }
 
-                foreach (string aus in pc.get_authorinstitution(RB_originstfile.Checked))
+                foreach (string aus in pc.get_authorinstitution(RB_originstfile.Checked,true))
                 {
                     if (!cbdict[aus].Checked)
                         continue;

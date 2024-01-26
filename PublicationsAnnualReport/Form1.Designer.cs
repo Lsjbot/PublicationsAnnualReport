@@ -69,11 +69,16 @@
             this.Topauthorbutton = new System.Windows.Forms.Button();
             this.Citebutton = new System.Windows.Forms.Button();
             this.Virtinstbutton = new System.Windows.Forms.Button();
+            this.swepubbutton = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.TBfractak = new System.Windows.Forms.TextBox();
+            this.CBauthorpin = new System.Windows.Forms.CheckBox();
+            this.CBpersubject = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // Quitbutton
             // 
-            this.Quitbutton.Location = new System.Drawing.Point(639, 436);
+            this.Quitbutton.Location = new System.Drawing.Point(639, 531);
             this.Quitbutton.Name = "Quitbutton";
             this.Quitbutton.Size = new System.Drawing.Size(138, 66);
             this.Quitbutton.TabIndex = 0;
@@ -153,7 +158,7 @@
             this.TB_startyear.Name = "TB_startyear";
             this.TB_startyear.Size = new System.Drawing.Size(39, 20);
             this.TB_startyear.TabIndex = 7;
-            this.TB_startyear.Text = "2018";
+            this.TB_startyear.Text = "2021";
             // 
             // TB_endyear
             // 
@@ -161,7 +166,7 @@
             this.TB_endyear.Name = "TB_endyear";
             this.TB_endyear.Size = new System.Drawing.Size(47, 20);
             this.TB_endyear.TabIndex = 8;
-            this.TB_endyear.Text = "2022";
+            this.TB_endyear.Text = "2023";
             // 
             // label1
             // 
@@ -478,11 +483,63 @@
             this.Virtinstbutton.UseVisualStyleBackColor = true;
             this.Virtinstbutton.Click += new System.EventHandler(this.Virtinstbutton_Click);
             // 
+            // swepubbutton
+            // 
+            this.swepubbutton.Location = new System.Drawing.Point(53, 558);
+            this.swepubbutton.Name = "swepubbutton";
+            this.swepubbutton.Size = new System.Drawing.Size(138, 39);
+            this.swepubbutton.TabIndex = 40;
+            this.swepubbutton.Text = "Matcha Swepub till DIVA";
+            this.swepubbutton.UseVisualStyleBackColor = true;
+            this.swepubbutton.Click += new System.EventHandler(this.swepubbutton_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(537, 299);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(68, 13);
+            this.label6.TabIndex = 41;
+            this.label6.Text = "Fraktionstak:";
+            // 
+            // TBfractak
+            // 
+            this.TBfractak.Location = new System.Drawing.Point(611, 296);
+            this.TBfractak.Name = "TBfractak";
+            this.TBfractak.Size = new System.Drawing.Size(47, 20);
+            this.TBfractak.TabIndex = 42;
+            this.TBfractak.Text = "10";
+            // 
+            // CBauthorpin
+            // 
+            this.CBauthorpin.AutoSize = true;
+            this.CBauthorpin.Location = new System.Drawing.Point(540, 322);
+            this.CBauthorpin.Name = "CBauthorpin";
+            this.CBauthorpin.Size = new System.Drawing.Size(116, 17);
+            this.CBauthorpin.TabIndex = 43;
+            this.CBauthorpin.Text = "Pinne per författare";
+            this.CBauthorpin.UseVisualStyleBackColor = true;
+            // 
+            // CBpersubject
+            // 
+            this.CBpersubject.AutoSize = true;
+            this.CBpersubject.Location = new System.Drawing.Point(690, 243);
+            this.CBpersubject.Name = "CBpersubject";
+            this.CBpersubject.Size = new System.Drawing.Size(71, 17);
+            this.CBpersubject.TabIndex = 44;
+            this.CBpersubject.Text = "Per ämne";
+            this.CBpersubject.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 604);
+            this.Controls.Add(this.CBpersubject);
+            this.Controls.Add(this.CBauthorpin);
+            this.Controls.Add(this.TBfractak);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.swepubbutton);
             this.Controls.Add(this.Virtinstbutton);
             this.Controls.Add(this.Citebutton);
             this.Controls.Add(this.Topauthorbutton);
@@ -574,6 +631,11 @@
         private System.Windows.Forms.Button Topauthorbutton;
         private System.Windows.Forms.Button Citebutton;
         private System.Windows.Forms.Button Virtinstbutton;
+        private System.Windows.Forms.Button swepubbutton;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox TBfractak;
+        private System.Windows.Forms.CheckBox CBauthorpin;
+        private System.Windows.Forms.CheckBox CBpersubject;
     }
 }
 

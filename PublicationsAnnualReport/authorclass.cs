@@ -457,7 +457,8 @@ namespace PublicationsAnnualReport
             List<authorclass> ls = new List<authorclass>();
 
             //"Aartsen, Marja;Valtorta, Nicole;Dahlberg, Lena [ldh] [0000-0002-7685-3216] (Högskolan Dalarna [7306], Akademin Utbildning, hälsa och samhälle [15900], Socialt arbete [9427]);van Regenmortel, Sofie;Waldegrave, Charles;Corrigan, Trudy"
-            string[] aa = s.Split(';');
+            //string[] aa = s.Split(';');
+            string[] aa = util.splitcsv(s, ';', '(', ')');
 
             string casrex = @"\[([a-z]{3,4})\]";
             string affrex = @"\((.+?)\)";
