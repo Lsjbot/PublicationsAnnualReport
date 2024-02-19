@@ -57,7 +57,7 @@ namespace PublicationsAnnualReport
 
         public static string[] splitcsv(string line, char splitchar)
         {
-            return splitcsv(line, ';', '"', '"');
+            return splitcsv(line, splitchar, '"', '"');
         }
         public static string[] splitcsv(string line, char splitchar,char groupstart,char groupend)
         {
